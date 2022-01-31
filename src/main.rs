@@ -1,10 +1,18 @@
 fn main() {
-    let opts = getopts::Options::new();
-    let matches = opts.parse(std::env::args()).unwrap();
+    let mut opts = getopts::Options::new();
+    let opts = opts.optflag("q", "quiet", "Hides the output of commit messages");
+    let matches = match opts.parse(std::env::args()) {
+        Ok(it) => it,
+        Err(_) => {
+            usage("commit-analzer", opts);
+            return;
+        }
+    };
     if matches.free.len() < 2 {
         usage(&matches.free[0], opts);
         return;
     }
+    let is_quiet = matches.opt_present("q");
     let commits_path = &matches.free[1];
     let commits = std::fs::read_to_string(commits_path).unwrap();
     let mut commits = commits.as_str();
@@ -34,14 +42,16 @@ fn main() {
                 }
             }
             last_time = Some(commit.date);
-            println!("{:#?}", commit);
+            if !is_quiet {
+                println!("{:#?}", commit);
+            }
         }
     }
 
     println!("Estimated time was {}h", duration.num_hours());
 }
 
-fn usage(program_name: &str, opts: getopts::Options) {
+fn usage(program_name: &str, opts: &getopts::Options) {
     println!("Usage: {} <FILE> [OPTIONS]\n", program_name);
     println!("{}", opts.usage("Parses the output of `git log`."));
 }
