@@ -1,12 +1,20 @@
 fn main() {
-    let mut commit = include_str!("..\\commits.txt");
+    let opts = getopts::Options::new();
+    let matches = opts.parse(std::env::args()).unwrap();
+    if matches.free.len() < 2 {
+        usage(&matches.free[0], opts);
+        return;
+    }
+    let commits_path = &matches.free[1];
+    let commits = std::fs::read_to_string(commits_path).unwrap();
+    let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
-    while !commit.is_empty() {
-        let result = parse_commit(commit);
+    while !commits.is_empty() {
+        let result = parse_commit(commits);
         match result {
-            Ok((result, remainder)) => {
-                commit = remainder;
-                parsed_commits.push(result);
+            Ok((commit, remainder)) => {
+                commits = remainder;
+                parsed_commits.push(commit);
             }
             Err(err) => {
                 dbg!(err);
@@ -31,6 +39,11 @@ fn main() {
     }
 
     println!("Estimated time was {}h", duration.num_hours());
+}
+
+fn usage(program_name: &str, opts: getopts::Options) {
+    println!("Usage: {} <FILE> [OPTIONS]\n", program_name);
+    println!("{}", opts.usage("Parses the output of `git log`."));
 }
 
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
