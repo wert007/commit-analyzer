@@ -10,12 +10,42 @@ fn main() {
             }
             Err(err) => {
                 dbg!(err);
-                // println!("{:100}", commit);
                 break;
             }
         }
     }
-    println!("{:#?}", parsed_commits);
+    let mut last_time = None;
+    let mut duration = chrono::Duration::zero();
+    let filter = Filter::none();
+    for commit in parsed_commits.into_iter().rev() {
+        if matches_filter(&commit, &filter) {
+            if let Some(last_time) = last_time {
+                let diff : chrono::Duration = commit.date - last_time;
+                if diff.num_hours() <= 3 {
+                    duration = duration + diff;
+                }
+            }
+            last_time = Some(commit.date);
+            println!("{:#?}", commit);
+        }
+    }
+
+    println!("Estimated time was {}h", duration.num_hours());
+}
+
+fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
+    true
+}
+
+#[derive(Debug)]
+struct Filter {
+
+}
+
+impl Filter {
+    pub fn none() -> Self {
+        Self {}
+    }
 }
 
 #[derive(Debug)]
@@ -34,12 +64,13 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         .ok_or(CommitParseError::CommitMissing)?
         .split_once('\n')
         .ok_or(CommitParseError::CommitMissing)?;
+    let commit = commit.trim();
     let (merge, remainder) = if let Some(it) = remainder
         .strip_prefix("Merge: ")
         .map(|s| s.split_once('\n').ok_or(CommitParseError::Unknown))
     {
         let (merge, remainder) = it?;
-        (Some(merge.to_owned()), remainder)
+        (Some(merge.trim().to_owned()), remainder)
     } else {
         (None, remainder)
     };
@@ -76,13 +107,14 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
             message.push(char);
         }
     }
+    let message = message.trim();
     let commit = Commit {
         commit: commit.into(),
         merge,
         author: Author::parse(author).map_err(|err| CommitParseError::AuthorFailed(err))?,
         date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
             .map_err(|err| CommitParseError::DateFailed(err))?,
-        message,
+        message: message.into(),
     };
     Ok((commit, remainder_result))
 }
@@ -115,8 +147,8 @@ impl Author {
             .strip_suffix('>')
             .ok_or(AuthorParseError::EmailFailed)?;
         Ok(Self {
-            name: name.into(),
-            email: email.into(),
+            name: name.trim().into(),
+            email: email.trim().into(),
         })
     }
 }
