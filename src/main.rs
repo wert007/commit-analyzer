@@ -55,6 +55,12 @@ fn main() {
             "message-starts-with",
             "Filters after certain commit messages. ORs if multiple specified.",
             "MESSAGE",
+        )
+        .optopt(
+            "d",
+            "duration",
+            "The time, which may pass between two commits, that still counts as working.",
+            "HOURS",
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
@@ -68,6 +74,14 @@ fn main() {
         return;
     }
     let is_quiet = matches.opt_present("q");
+    let max_diff_hours : u32 = match matches.opt_str("duration").map(|str| str.parse()) {
+        None => 3,
+        Some(Ok(it)) => it,
+        Some(Err(_)) => {
+            eprintln!("duration must be an integer value!");
+            return;
+        },
+    };
     let commits_path = &matches.free[1];
     let commits = std::fs::read_to_string(commits_path).unwrap();
     let mut commits = commits.as_str();
@@ -102,7 +116,7 @@ fn main() {
         if matches_filter(&commit, &filter) {
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = commit.date - last_time;
-                if diff.num_hours() <= 3 {
+                if diff.num_hours() <= max_diff_hours as i64 {
                     duration = duration + diff;
                 }
             }
