@@ -1,6 +1,61 @@
 fn main() {
     let mut opts = getopts::Options::new();
-    let opts = opts.optflag("q", "quiet", "Hides the output of commit messages");
+    let opts = opts
+        .optflag("q", "quiet", "Hides the output of commit messages")
+        .optmulti(
+            "a",
+            "author-contains",
+            "Filters after certain author names. ORs if multiple specified.",
+            "NAME",
+        )
+        .optmulti(
+            "",
+            "author-equals",
+            "Filters after certain author names. ORs if multiple specified.",
+            "NAME",
+        )
+        .optmulti(
+            "e",
+            "email-contains",
+            "Filters after certain author emails. ORs if multiple specified.",
+            "EMAIL",
+        )
+        .optmulti(
+            "",
+            "email-equals",
+            "Filters after certain author emails. ORs if multiple specified.",
+            "EMAIL",
+        )
+        .optmulti(
+            "c",
+            "commit-contains",
+            "Filters after certain commit hashes. ORs if multiple specified.",
+            "HASH",
+        )
+        .optmulti(
+            "",
+            "commit-equals",
+            "Filters after certain commit hashes. ORs if multiple specified.",
+            "HASH",
+        )
+        .optmulti(
+            "m",
+            "message-contains",
+            "Filters after certain commit messages. ORs if multiple specified.",
+            "MESSAGE",
+        )
+        .optmulti(
+            "",
+            "message-equals",
+            "Filters after certain commit messages. ORs if multiple specified.",
+            "MESSAGE",
+        )
+        .optmulti(
+            "l",
+            "message-starts-with",
+            "Filters after certain commit messages. ORs if multiple specified.",
+            "MESSAGE",
+        );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(_) => {
@@ -32,7 +87,17 @@ fn main() {
     }
     let mut last_time = None;
     let mut duration = chrono::Duration::zero();
-    let filter = Filter::default();
+    let filter = Filter {
+        author_equals: matches.opt_strs("author-equals"),
+        author_contains: matches.opt_strs("author-contains"),
+        email_equals: matches.opt_strs("email-equals"),
+        email_contains: matches.opt_strs("email-contains"),
+        commit_equals: matches.opt_strs("commit-equals"),
+        commit_contains: matches.opt_strs("commit-contains"),
+        message_equals: matches.opt_strs("message-equals"),
+        message_contains: matches.opt_strs("message-contains"),
+        message_starts_with: matches.opt_strs("message-starts-with"),
+    };
     for commit in parsed_commits.into_iter().rev() {
         if matches_filter(&commit, &filter) {
             if let Some(last_time) = last_time {
