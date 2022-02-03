@@ -112,8 +112,10 @@ fn main() {
         message_contains: matches.opt_strs("message-contains"),
         message_starts_with: matches.opt_strs("message-starts-with"),
     };
+    let mut commit_count = 0;
     for commit in parsed_commits.into_iter().rev() {
         if matches_filter(&commit, &filter) {
+            commit_count += 1;
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = commit.date - last_time;
                 if diff.num_hours() <= max_diff_hours as i64 {
@@ -128,6 +130,7 @@ fn main() {
     }
 
     println!("Estimated time was {}h", duration.num_hours());
+    println!("Found {} commits overall", commit_count);
 }
 
 fn usage(program_name: &str, opts: &getopts::Options) {
