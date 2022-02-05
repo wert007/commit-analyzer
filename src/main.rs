@@ -65,23 +65,17 @@ fn main() -> Result<(), Box<dyn Error>>{
             "duration",
             "The time, which may pass between two commits, that still counts as working.",
             "HOURS",
-        )
-        .optopt(
-            "o",
-            "output",
-            "An output file for the commits per day in csv format.",
-            "FILE",
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
-        Err(err) => {
+        Err(_) => {
             usage("commit-analzer", opts);
-            return Err(err.into());
+            return;
         }
     };
     if matches.free.len() < 2 {
         usage(&matches.free[0], opts);
-        return Ok(());
+        return;
     }
     let subcommand = matches.free[1].as_str();
     match subcommand {
@@ -105,9 +99,9 @@ fn commit_analysis(matches: Matches, opts: &getopts::Options) -> Result<(), Box<
     let max_diff_hours : u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
-        Some(Err(err)) => {
+        Some(Err(_)) => {
             eprintln!("duration must be an integer value!");
-            return Err(err.into());
+            return;
         },
     };
     let path = matches.opt_str("output");
@@ -141,11 +135,9 @@ fn commit_analysis(matches: Matches, opts: &getopts::Options) -> Result<(), Box<
         message_starts_with: matches.opt_strs("message-starts-with"),
     };
     let mut commit_count = 0;
-    let mut commits_per_day = HashMap::new();
     for commit in parsed_commits.into_iter().rev() {
         if matches_filter(&commit, &filter) {
             commit_count += 1;
-            commits_per_day.entry(commit.date.date()).or_insert(0).add_assign(1);
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = commit.date - last_time;
                 if diff.num_hours() <= max_diff_hours as i64 {
@@ -161,15 +153,6 @@ fn commit_analysis(matches: Matches, opts: &getopts::Options) -> Result<(), Box<
 
     println!("Estimated time was {}h", duration.num_hours());
     println!("Found {} commits overall", commit_count);
-
-    if let Some(path) = path {
-        let mut file = std::fs::File::create(path)?;
-        for (key, value) in commits_per_day {
-            writeln!(file, "{}, {}", key, value)?;
-        }
-    }
-
-    Ok(())
 }
 
 fn usage(program_name: &str, opts: &getopts::Options) {
