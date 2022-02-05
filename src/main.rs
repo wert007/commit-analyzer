@@ -1,5 +1,7 @@
 use std::{collections::HashMap, ops::AddAssign, error::Error, io::Write};
 
+use getopts::Matches;
+
 fn main() -> Result<(), Box<dyn Error>>{
     let mut opts = getopts::Options::new();
     let opts = opts
@@ -81,6 +83,24 @@ fn main() -> Result<(), Box<dyn Error>>{
         usage(&matches.free[0], opts);
         return Ok(());
     }
+    let subcommand = matches.free[1].as_str();
+    match subcommand {
+        "commits" => {
+            commit_analysis(matches, opts)
+        }
+        _ => {
+            usage(&matches.free[0], opts);
+            Err("Unknown subcommand!".into())
+        }
+    }
+}
+
+fn commit_analysis(matches: Matches, opts: &getopts::Options) -> Result<(), Box<dyn Error>> {
+    if matches.free.len() < 3 {
+        usage_commit_analysis(&matches.free[0], opts);
+        return Err("Missing file path".into());
+    }
+    let commits_path = &matches.free[2];
     let is_quiet = matches.opt_present("q");
     let max_diff_hours : u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
@@ -91,7 +111,6 @@ fn main() -> Result<(), Box<dyn Error>>{
         },
     };
     let path = matches.opt_str("output");
-    let commits_path = &matches.free[1];
     let commits = std::fs::read_to_string(commits_path).unwrap();
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
@@ -154,7 +173,12 @@ fn main() -> Result<(), Box<dyn Error>>{
 }
 
 fn usage(program_name: &str, opts: &getopts::Options) {
-    println!("Usage: {} <FILE> [OPTIONS]\n", program_name);
+    println!("Usage: {} <SUBCOMMAND> [OPTIONS]\n", program_name);
+    println!("{}", opts.usage("Parses the output of `git log`."));
+}
+
+fn usage_commit_analysis(program_name: &str, opts: &getopts::Options) {
+    println!("Usage: {} commit <FILE> [OPTIONS]\n", program_name);
     println!("{}", opts.usage("Parses the output of `git log`."));
 }
 
