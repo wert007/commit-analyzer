@@ -351,7 +351,7 @@ pub struct Commit {
 }
 
 impl Commit {
-    pub fn loc(&self, filter: &Filter) -> u32 {
+    pub fn loc(&self, filter: &Filter) -> i64 {
         self.locs.iter().filter(|l| filter.check_loc(l)).map(|l| l.loc()).sum()
     }
 }
@@ -430,11 +430,11 @@ impl Loc {
         })
     }
 
-    fn loc(&self) -> u32 {
+    fn loc(&self) -> i64 {
         if self.added.is_none() && self.removed.is_none() {
             0
         } else {
-            (self.added.unwrap() as i64 - self.removed.unwrap() as i64).abs() as u32
+            self.added.unwrap() as i64 - self.removed.unwrap() as i64
         }
     }
 }
