@@ -58,6 +58,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             "Filters after certain commit messages. ORs if multiple specified.",
             "MESSAGE",
         )
+        .optmulti(
+            "f",
+            "file-extension",
+            "Filters loc after certain file extension (e.g. `--file-extension cpp`). ORs if multiple specified.",
+            "EXTENSION",
+        )
         .optopt(
             "d",
             "duration",
@@ -120,6 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         message_equals: matches.opt_strs("message-equals"),
         message_contains: matches.opt_strs("message-contains"),
         message_starts_with: matches.opt_strs("message-starts-with"),
+        file_extension: matches.opt_strs("file-extension"),
     };
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
@@ -134,7 +141,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             loc_per_day
                 .entry(commit.date.date())
                 .or_insert(0)
-                .add_assign(commit.loc());
+                .add_assign(commit.loc(&filter));
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = commit.date - last_time;
                 if diff.num_hours() <= max_diff_hours as i64 {
@@ -182,7 +189,7 @@ fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
 }
 
 #[derive(Debug, Default)]
-struct Filter {
+pub struct Filter {
     author_equals: Vec<String>,
     author_contains: Vec<String>,
     email_equals: Vec<String>,
@@ -192,6 +199,7 @@ struct Filter {
     message_equals: Vec<String>,
     message_contains: Vec<String>,
     message_starts_with: Vec<String>,
+    file_extension: Vec<String>,
 }
 
 impl Filter {
@@ -228,6 +236,10 @@ impl Filter {
                 .iter()
                 .any(|m| message.starts_with(m));
         equals && contains && starts_with
+    }
+
+    fn check_loc(&self, loc: &&Loc) -> bool {
+        self.file_extension.is_empty() || self.file_extension.iter().any(|ext| loc.file.ends_with(&format!(".{}", ext)))
     }
 }
 
@@ -339,8 +351,8 @@ pub struct Commit {
 }
 
 impl Commit {
-    pub fn loc(&self) -> u32 {
-        self.locs.iter().map(|l| l.loc()).sum()
+    pub fn loc(&self, filter: &Filter) -> u32 {
+        self.locs.iter().filter(|l| filter.check_loc(l)).map(|l| l.loc()).sum()
     }
 }
 
