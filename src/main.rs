@@ -1,6 +1,6 @@
-use std::{collections::HashMap, ops::AddAssign, error::Error, io::Write};
+use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
-fn main() -> Result<(), Box<dyn Error>>{
+fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
         .optflag("q", "quiet", "Hides the output of commit messages")
@@ -82,13 +82,13 @@ fn main() -> Result<(), Box<dyn Error>>{
         return Ok(());
     }
     let is_quiet = matches.opt_present("q");
-    let max_diff_hours : u32 = match matches.opt_str("duration").map(|str| str.parse()) {
+    let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
         Some(Err(err)) => {
             eprintln!("duration must be an integer value!");
             return Err(err.into());
-        },
+        }
     };
     let path = matches.opt_str("output");
     let commits_path = &matches.free[1];
@@ -123,10 +123,18 @@ fn main() -> Result<(), Box<dyn Error>>{
     };
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
+    let mut loc_per_day = HashMap::new();
     for commit in parsed_commits.into_iter().rev() {
         if matches_filter(&commit, &filter) {
             commit_count += 1;
-            commits_per_day.entry(commit.date.date()).or_insert(0).add_assign(1);
+            commits_per_day
+                .entry(commit.date.date())
+                .or_insert(0)
+                .add_assign(1);
+            loc_per_day
+                .entry(commit.date.date())
+                .or_insert(0)
+                .add_assign(commit.loc());
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = commit.date - last_time;
                 if diff.num_hours() <= max_diff_hours as i64 {
@@ -145,8 +153,16 @@ fn main() -> Result<(), Box<dyn Error>>{
 
     if let Some(path) = path {
         let mut file = std::fs::File::create(path)?;
-        for (key, value) in commits_per_day {
-            writeln!(file, "{}, {}", key, value)?;
+        let mut sorted_per_day_data = vec![];
+        for key in commits_per_day.keys() {
+            let commit_count = commits_per_day[key];
+            let loc = loc_per_day[key];
+            sorted_per_day_data.push((*key, commit_count, loc));
+        }
+        sorted_per_day_data.sort_by_cached_key(|(k, _, _)| *k);
+        writeln!(file, "Date, Commits, Loc")?;
+        for (date, commits, loc) in sorted_per_day_data {
+            writeln!(file, "{}, {}, {}", date, commits, loc)?;
         }
     }
 
@@ -222,6 +238,8 @@ enum CommitParseError {
     DateMissing,
     AuthorFailed(AuthorParseError),
     DateFailed(chrono::ParseError),
+    LocSyntaxError,
+    LocFailed(LocParseError),
     Unknown,
 }
 
@@ -246,16 +264,19 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         .ok_or(CommitParseError::AuthorMissing)?
         .split_once('\n')
         .ok_or(CommitParseError::AuthorMissing)?;
-    let (date, remainder) = remainder
+    let (date, mut remainder) = remainder
         .strip_prefix("Date:   ")
         .ok_or(CommitParseError::DateMissing)?
         .split_once('\n')
         .ok_or(CommitParseError::DateMissing)?;
 
     let mut message = String::new();
-    let mut remainder_result = "";
+    let mut remainder_result = remainder;
+    if let Some(it) = remainder.strip_prefix('\n') {
+        remainder = it;
+    }
     let mut space_count = 0;
-    let mut increase_space_count = false;
+    let mut increase_space_count = true;
     for (index, char) in remainder.char_indices() {
         if increase_space_count {
             if char == ' ' {
@@ -263,7 +284,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
             } else {
                 increase_space_count = false;
             }
-        } else if char == '\n' {
+        } else if space_count == 4 && char == '\n' {
             increase_space_count = true;
             space_count = 0;
         } else if space_count < 4 {
@@ -275,6 +296,26 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         }
     }
     let message = message.trim();
+
+    let mut locs = vec![];
+    loop {
+        if remainder_result.is_empty() {
+            break;
+        }
+        let (loc, remainder) = remainder_result
+            .split_once('\n')
+            .ok_or(CommitParseError::LocSyntaxError)?;
+        if loc.is_empty() || loc.starts_with("commit") {
+            break;
+        }
+        locs.push(Loc::parse(loc).map_err(|err| CommitParseError::LocFailed(err))?);
+        remainder_result = remainder;
+        if let Some(remainder) = remainder_result.strip_prefix('\n') {
+            remainder_result = remainder;
+            break;
+        }
+    }
+
     let commit = Commit {
         commit: commit.into(),
         merge,
@@ -282,6 +323,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
             .map_err(|err| CommitParseError::DateFailed(err))?,
         message: message.into(),
+        locs,
     };
     Ok((commit, remainder_result))
 }
@@ -293,6 +335,13 @@ pub struct Commit {
     author: Author,
     date: chrono::DateTime<chrono::FixedOffset>,
     message: String,
+    locs: Vec<Loc>,
+}
+
+impl Commit {
+    pub fn loc(&self) -> u32 {
+        self.locs.iter().map(|l| l.loc()).sum()
+    }
 }
 
 #[derive(Debug)]
@@ -317,5 +366,63 @@ impl Author {
             name: name.trim().into(),
             email: email.trim().into(),
         })
+    }
+}
+
+#[derive(Debug)]
+enum LocParseError {
+    FirstTabulatorMissing,
+    SecondTabulatorMissing,
+    AddedParseError(ParseIntError),
+    RemovedParseError(ParseIntError),
+}
+
+#[derive(Debug)]
+struct Loc {
+    added: Option<u32>,
+    removed: Option<u32>,
+    file: String,
+}
+
+impl Loc {
+    pub fn parse(loc: &str) -> Result<Self, LocParseError> {
+        let (added, remainder) = loc
+            .split_once('\t')
+            .ok_or(LocParseError::FirstTabulatorMissing)?;
+        let (removed, file) = remainder
+            .split_once('\t')
+            .ok_or(LocParseError::SecondTabulatorMissing)?;
+        let added = if added == "-" {
+            None
+        } else {
+            Some(
+                added
+                    .parse()
+                    .map_err(|err| LocParseError::AddedParseError(err))?,
+            )
+        };
+        let removed = if removed == "-" {
+            None
+        } else {
+            Some(
+                removed
+                    .parse()
+                    .map_err(|err| LocParseError::RemovedParseError(err))?,
+            )
+        };
+        let file = file.into();
+        Ok(Self {
+            added,
+            removed,
+            file,
+        })
+    }
+
+    fn loc(&self) -> u32 {
+        if self.added.is_none() && self.removed.is_none() {
+            0
+        } else {
+            (self.added.unwrap() as i64 - self.removed.unwrap() as i64).abs() as u32
+        }
     }
 }
