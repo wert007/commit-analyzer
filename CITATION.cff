@@ -60,8 +60,6 @@ url: https://github.com/wert007/commit-analyzer
 
 # References.
 references:
-
-################################################################################
   - abstract: A collection of initialised source file templates.
     authors:
       - family-names: Matthes
@@ -73,3 +71,5 @@ references:
     type: software-code
     url: https://github.com/kevinmatthes/blank
     version: 0.0.4
+
+################################################################################
