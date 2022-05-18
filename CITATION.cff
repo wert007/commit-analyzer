@@ -62,3 +62,14 @@ url: https://github.com/wert007/commit-analyzer
 references:
 
 ################################################################################
+  - abstract: A collection of initialised source file templates.
+    authors:
+      - family-names: Matthes
+        given-names: Kevin
+    date-released: 2022-05-14
+    license: GPL-2.0
+    repository-artifact: https://github.com/kevinmatthes/blank
+    title: blank
+    type: software-code
+    url: https://github.com/kevinmatthes/blank
+    version: 0.0.4
