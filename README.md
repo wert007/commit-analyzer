@@ -51,9 +51,9 @@ main directory of this repository.  Its text is as follows:
 
 ## Software Requirements
 
-| Requirement   | Type          | Role          |
-|:--------------|:-------------:|:--------------|
-| Cargo         | application   | Rust compiler |
+| Requirement   | Type          | Role              |
+|:--------------|:-------------:|:------------------|
+| Cargo         | application   | Rust build system |
 
 The application is build using one of the following commands.
 
