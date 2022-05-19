@@ -83,17 +83,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
-            usage("commit-analyzer", opts);
+            usage(opts);
             return Err(err.into());
         }
     };
     if matches.opt_present ("h")
     {
-        usage (& matches.free[0x0], opts);
+        usage (opts);
         return Ok (());
     };
     if matches.free.len() < 2 {
-        usage(&matches.free[0], opts);
+        usage(opts);
         return Ok(());
     }
     let is_quiet = matches.opt_present("q");
