@@ -1,7 +1,7 @@
 use crate :: usage :: usage;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
-pub mod usage;
+mod usage;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
