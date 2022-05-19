@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
-            usage("commit-analzer", opts);
+            usage("commit-analyzer", opts);
             return Err(err.into());
         }
     };
