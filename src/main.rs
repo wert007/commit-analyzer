@@ -1,4 +1,4 @@
-use crate :: usage :: usage;
+use crate::usage::usage;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
 mod usage;
@@ -87,10 +87,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present ("h") || matches.free.len () < 0x2
-    {
-        usage (opts);
-        return Ok (());
+    if matches.opt_present("h") || matches.free.len() < 0x2 {
+        usage(opts);
+        return Ok(());
     };
     let is_quiet = matches.opt_present("q");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
@@ -239,7 +238,11 @@ impl Filter {
     }
 
     fn check_loc(&self, loc: &&Loc) -> bool {
-        self.file_extension.is_empty() || self.file_extension.iter().any(|ext| loc.file.ends_with(&format!(".{}", ext)))
+        self.file_extension.is_empty()
+            || self
+                .file_extension
+                .iter()
+                .any(|ext| loc.file.ends_with(&format!(".{}", ext)))
     }
 }
 
@@ -352,7 +355,11 @@ pub struct Commit {
 
 impl Commit {
     pub fn loc(&self, filter: &Filter) -> i64 {
-        self.locs.iter().filter(|l| filter.check_loc(l)).map(|l| l.loc()).sum()
+        self.locs
+            .iter()
+            .filter(|l| filter.check_loc(l))
+            .map(|l| l.loc())
+            .sum()
     }
 }
 
