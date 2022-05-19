@@ -1,3 +1,12 @@
+//! The module for the usage advice.
+//!
+//! The usage advice defined in this module is specialised regarding the needs
+//! of this application.  This is,
+//!
+//! * the application name is hard coded,
+//! * the tool tip is hard coded, and
+//! * the expected order of arguments in the usage template is hard coded.
+
 use getopts :: Options;
 
 /// A small in-app documentation.
