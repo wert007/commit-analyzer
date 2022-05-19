@@ -1,4 +1,7 @@
+use crate :: usage :: usage;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
+
+pub mod usage;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
@@ -174,11 +177,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-fn usage(program_name: &str, opts: &getopts::Options) {
-    println!("Usage: {} <FILE> [OPTIONS]\n", program_name);
-    println!("{}", opts.usage("Parses the output of `git log`."));
 }
 
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
