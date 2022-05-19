@@ -7,6 +7,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
         .optflag("q", "quiet", "Hides the output of commit messages.")
+        .optflag("h", "help", "Show this help and exit.")
         .optmulti(
             "a",
             "author-contains",
@@ -85,6 +86,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             usage("commit-analyzer", opts);
             return Err(err.into());
         }
+    };
+    if matches.opt_present ("h")
+    {
+        usage (& matches.free[0x0], opts);
+        return Ok (());
     };
     if matches.free.len() < 2 {
         usage(&matches.free[0], opts);
