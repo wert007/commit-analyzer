@@ -15,10 +15,9 @@ use getopts::Options;
 ///
 /// This function will write a brief usage information, including a short
 /// introduction to the meaning of the configured options, to `stdout`.
-pub fn usage(options: &Options) -> () {
+pub fn usage(options: &Options) {
     println!(
         "Usage:  commit-analyzer <FILE> [OPTIONS]\n{}",
         options.usage("Parses the output of `git log`.")
     );
-    return;
 }
