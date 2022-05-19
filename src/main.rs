@@ -87,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present ("h") || matches.free.len < 0x2
+    if matches.opt_present ("h") || matches.free.len () < 0x2
     {
         usage (opts);
         return Ok (());
