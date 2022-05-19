@@ -6,7 +6,7 @@ pub mod usage;
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
-        .optflag("q", "quiet", "Hides the output of commit messages")
+        .optflag("q", "quiet", "Hides the output of commit messages.")
         .optmulti(
             "a",
             "author-contains",
