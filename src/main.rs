@@ -87,15 +87,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present ("h")
+    if matches.opt_present ("h") || matches.free.len < 0x2
     {
         usage (opts);
         return Ok (());
     };
-    if matches.free.len() < 2 {
-        usage(opts);
-        return Ok(());
-    }
     let is_quiet = matches.opt_present("q");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
