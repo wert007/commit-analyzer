@@ -1,3 +1,4 @@
+use getopts::Options;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 use usage::usage;
 
