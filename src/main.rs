@@ -181,7 +181,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// A small in-app documentation.
+/// A brief in-app documentation.
 ///
 /// This function will write a brief usage information, including a short
 /// introduction to the meaning of the configured `options`, to `stdout`.
