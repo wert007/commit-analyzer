@@ -323,7 +323,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         if loc.is_empty() || loc.starts_with("commit") {
             break;
         }
-        locs.push(Loc::parse(loc).map_err(|err| CommitParseError::LocFailed(err))?);
+        locs.push(Loc::parse(loc).map_err(CommitParseError::LocFailed)?);
         remainder_result = remainder;
         if let Some(remainder) = remainder_result.strip_prefix('\n') {
             remainder_result = remainder;
@@ -334,9 +334,9 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
     let commit = Commit {
         commit: commit.into(),
         merge,
-        author: Author::parse(author).map_err(|err| CommitParseError::AuthorFailed(err))?,
+        author: Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
         date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
-            .map_err(|err| CommitParseError::DateFailed(err))?,
+            .map_err(CommitParseError::DateFailed)?,
         message: message.into(),
         locs,
     };
@@ -417,7 +417,7 @@ impl Loc {
             Some(
                 added
                     .parse()
-                    .map_err(|err| LocParseError::AddedParseError(err))?,
+                    .map_err(LocParseError::AddedParseError)?,
             )
         };
         let removed = if removed == "-" {
@@ -426,7 +426,7 @@ impl Loc {
             Some(
                 removed
                     .parse()
-                    .map_err(|err| LocParseError::RemovedParseError(err))?,
+                    .map_err(LocParseError::RemovedParseError)?,
             )
         };
         let file = file.into();
