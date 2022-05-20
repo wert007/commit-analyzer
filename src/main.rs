@@ -355,6 +355,9 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
 #[derive(Debug)]
 pub struct Commit {
     commit: String,
+    /// This field is currently unused, if this changes, you can delete this
+    /// comment and the allow(dead_code) tag.
+    #[allow(dead_code)]
     merge: Option<String>,
     author: Author,
     date: chrono::DateTime<chrono::FixedOffset>,
