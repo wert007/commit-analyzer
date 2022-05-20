@@ -1,5 +1,5 @@
-use crate::usage::usage;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
+use usage::usage;
 
 mod usage;
 
