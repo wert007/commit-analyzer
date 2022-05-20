@@ -1,9 +1,11 @@
+use getopts::Options;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
-        .optflag("q", "quiet", "Hides the output of commit messages")
+        .optflag("q", "quiet", "Hides the output of commit messages.")
+        .optflag("h", "help", "Show this help and exit.")
         .optmulti(
             "a",
             "author-contains",
@@ -79,12 +81,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
-            usage("commit-analzer", opts);
+            usage(opts);
             return Err(err.into());
         }
     };
-    if matches.free.len() < 2 {
-        usage(&matches.free[0], opts);
+    if matches.opt_present("h") || matches.free.len() < 2 {
+        usage(opts);
         return Ok(());
     }
     let is_quiet = matches.opt_present("q");
@@ -176,9 +178,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn usage(program_name: &str, opts: &getopts::Options) {
-    println!("Usage: {} <FILE> [OPTIONS]\n", program_name);
-    println!("{}", opts.usage("Parses the output of `git log`."));
+/// A small in-app documentation.
+///
+/// This function will write a brief usage information, including a short
+/// introduction to the meaning of the configured `options`, to `stdout`.
+fn usage(options: &Options) {
+    println!(
+        "Usage:  commit-analyzer <FILE> [OPTIONS]\n\n{}",
+        options.usage("Parses the output of `git log`.")
+    );
 }
 
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
@@ -239,7 +247,11 @@ impl Filter {
     }
 
     fn check_loc(&self, loc: &&Loc) -> bool {
-        self.file_extension.is_empty() || self.file_extension.iter().any(|ext| loc.file.ends_with(&format!(".{}", ext)))
+        self.file_extension.is_empty()
+            || self
+                .file_extension
+                .iter()
+                .any(|ext| loc.file.ends_with(&format!(".{}", ext)))
     }
 }
 
@@ -320,7 +332,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         if loc.is_empty() || loc.starts_with("commit") {
             break;
         }
-        locs.push(Loc::parse(loc).map_err(|err| CommitParseError::LocFailed(err))?);
+        locs.push(Loc::parse(loc).map_err(CommitParseError::LocFailed)?);
         remainder_result = remainder;
         if let Some(remainder) = remainder_result.strip_prefix('\n') {
             remainder_result = remainder;
@@ -331,9 +343,9 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
     let commit = Commit {
         commit: commit.into(),
         merge,
-        author: Author::parse(author).map_err(|err| CommitParseError::AuthorFailed(err))?,
+        author: Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
         date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
-            .map_err(|err| CommitParseError::DateFailed(err))?,
+            .map_err(CommitParseError::DateFailed)?,
         message: message.into(),
         locs,
     };
@@ -352,7 +364,11 @@ pub struct Commit {
 
 impl Commit {
     pub fn loc(&self, filter: &Filter) -> i64 {
-        self.locs.iter().filter(|l| filter.check_loc(l)).map(|l| l.loc()).sum()
+        self.locs
+            .iter()
+            .filter(|l| filter.check_loc(l))
+            .map(|l| l.loc())
+            .sum()
     }
 }
 
@@ -407,20 +423,12 @@ impl Loc {
         let added = if added == "-" {
             None
         } else {
-            Some(
-                added
-                    .parse()
-                    .map_err(|err| LocParseError::AddedParseError(err))?,
-            )
+            Some(added.parse().map_err(LocParseError::AddedParseError)?)
         };
         let removed = if removed == "-" {
             None
         } else {
-            Some(
-                removed
-                    .parse()
-                    .map_err(|err| LocParseError::RemovedParseError(err))?,
-            )
+            Some(removed.parse().map_err(LocParseError::RemovedParseError)?)
         };
         let file = file.into();
         Ok(Self {
