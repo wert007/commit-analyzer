@@ -1,7 +1,7 @@
 use chrono::{DateTime, Duration, FixedOffset, ParseError};
 use getopts::Options;
 use std::{
-    collections::HashMap, env, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign
+    collections::HashMap, env, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
