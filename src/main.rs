@@ -1,6 +1,8 @@
 use chrono::{DateTime, Duration, FixedOffset, ParseError};
 use getopts::Options;
-use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
+use std::{
+    collections::HashMap, env, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = Options::new();
@@ -79,7 +81,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             "An output file for the commits per day in csv format.",
             "FILE",
         );
-    let matches = match opts.parse(std::env::args()) {
+    let matches = match opts.parse(env::args()) {
         Ok(it) => it,
         Err(err) => {
             usage(opts);
@@ -101,7 +103,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     let path = matches.opt_str("output");
     let commits_path = &matches.free[1];
-    let commits = std::fs::read_to_string(commits_path).unwrap();
+    let commits = fs::read_to_string(commits_path).unwrap();
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
     while !commits.is_empty() {
@@ -162,7 +164,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Found {} commits overall", commit_count);
 
     if let Some(path) = path {
-        let mut file = std::fs::File::create(path)?;
+        let mut file = fs::File::create(path)?;
         let mut sorted_per_day_data = vec![];
         for key in commits_per_day.keys() {
             let commit_count = commits_per_day[key];
