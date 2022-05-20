@@ -1,8 +1,5 @@
 use getopts::Options;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
-use usage::usage;
-
-mod usage;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
@@ -179,6 +176,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+/// A small in-app documentation.
+///
+/// This function will write a brief usage information, including a short
+/// introduction to the meaning of the configured `options`, to `stdout`.
+fn usage(options: &Options) {
+    println!(
+        "Usage:  commit-analyzer <FILE> [OPTIONS]\n\n{}",
+        options.usage("Parses the output of `git log`.")
+    );
 }
 
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
