@@ -423,20 +423,12 @@ impl Loc {
         let added = if added == "-" {
             None
         } else {
-            Some(
-                added
-                    .parse()
-                    .map_err(LocParseError::AddedParseError)?,
-            )
+            Some(added.parse().map_err(LocParseError::AddedParseError)?)
         };
         let removed = if removed == "-" {
             None
         } else {
-            Some(
-                removed
-                    .parse()
-                    .map_err(LocParseError::RemovedParseError)?,
-            )
+            Some(removed.parse().map_err(LocParseError::RemovedParseError)?)
         };
         let file = file.into();
         Ok(Self {
