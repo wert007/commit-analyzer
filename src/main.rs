@@ -2,7 +2,7 @@ use getopts::Options;
 use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut opts = getopts::Options::new();
+    let mut opts = Options::new();
     let opts = opts
         .optflag("q", "quiet", "Hides the output of commit messages.")
         .optflag("h", "help", "Show this help and exit.")
