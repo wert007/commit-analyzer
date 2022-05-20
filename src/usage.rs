@@ -17,7 +17,7 @@ use getopts::Options;
 /// introduction to the meaning of the configured options, to `stdout`.
 pub fn usage(options: &Options) {
     println!(
-        "Usage:  commit-analyzer <FILE> [OPTIONS]\n{}",
+        "Usage:  commit-analyzer <FILE> [OPTIONS]\n\n{}",
         options.usage("Parses the output of `git log`.")
     );
 }
