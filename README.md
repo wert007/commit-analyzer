@@ -26,3 +26,10 @@ commit-analyzer outputfile.txt --output "commits-and-loc-by-date.csv"
 
 This project's license is **MIT**.  The license can be found `LICENSE` in the
 main directory of this repository.
+
+## Configured Options
+
+| Option    | Brief | Meaning                                                  |
+|:---------:|:-----:|:---------------------------------------------------------|
+| `--help`  | `-h`  | Show this help and exit.                                 |
+
