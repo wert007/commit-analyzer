@@ -187,8 +187,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 /// introduction to the meaning of the configured `options`, to `stdout`.
 fn usage(options: &Options) {
     println!(
-        "Usage:  commit-analyzer <FILE> [OPTIONS]\n\n{}",
-        options.usage("Parses the output of `git log`.")
+        "Parses the output of `git log`.\n\n{}",
+        options.usage("Usage:  commit-analyzer <FILE> [OPTIONS]")
     );
 }
 
