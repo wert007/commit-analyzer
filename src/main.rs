@@ -8,61 +8,61 @@ fn main() -> Result<(), Box<dyn Error>> {
         .optmulti(
             "a",
             "author-contains",
-            "Filter for certain author names. ORs if multiple specified.",
+            "Filter for certain author names. ORs if specified multiple times.",
             "NAME",
         )
         .optmulti(
             "",
             "author-equals",
-            "Filter for certain author names. ORs if multiple specified.",
+            "Filter for certain author names. ORs if specified multiple times.",
             "NAME",
         )
         .optmulti(
             "e",
             "email-contains",
-            "Filter for certain author emails. ORs if multiple specified.",
+            "Filter for certain author emails. ORs if specified multiple times.",
             "EMAIL",
         )
         .optmulti(
             "",
             "email-equals",
-            "Filter for certain author emails. ORs if multiple specified.",
+            "Filter for certain author emails. ORs if specified multiple times.",
             "EMAIL",
         )
         .optmulti(
             "c",
             "commit-contains",
-            "Filter for certain commit hashes. ORs if multiple specified.",
+            "Filter for certain commit hashes. ORs if specified multiple times.",
             "HASH",
         )
         .optmulti(
             "",
             "commit-equals",
-            "Filter for certain commit hashes. ORs if multiple specified.",
+            "Filter for certain commit hashes. ORs if specified multiple times.",
             "HASH",
         )
         .optmulti(
             "m",
             "message-contains",
-            "Filter for certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
         .optmulti(
             "",
             "message-equals",
-            "Filter for certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
         .optmulti(
             "l",
             "message-starts-with",
-            "Filter for certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
         .optmulti(
             "f",
             "file-extension",
-            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if multiple specified.",
+            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.",
             "EXTENSION",
         )
         .optopt(
