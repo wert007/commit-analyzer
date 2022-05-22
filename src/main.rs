@@ -1,81 +1,80 @@
-use getopts::Options;
-use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
+use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
-        .optflag("q", "quiet", "Hides the output of commit messages.")
+        .optflag("q", "quiet", "Hide the output of commit messages.")
         .optflag("h", "help", "Show this help and exit.")
         .optmulti(
             "a",
             "author-contains",
-            "Filters after certain author names. ORs if multiple specified.",
+            "Filter for certain author names. ORs if specified multiple times.",
             "NAME",
         )
         .optmulti(
             "",
             "author-equals",
-            "Filters after certain author names. ORs if multiple specified.",
+            "Filter for certain author names. ORs if specified multiple times.",
             "NAME",
         )
         .optmulti(
             "e",
             "email-contains",
-            "Filters after certain author emails. ORs if multiple specified.",
+            "Filter for certain author emails. ORs if specified multiple times.",
             "EMAIL",
         )
         .optmulti(
             "",
             "email-equals",
-            "Filters after certain author emails. ORs if multiple specified.",
+            "Filter for certain author emails. ORs if specified multiple times.",
             "EMAIL",
         )
         .optmulti(
             "c",
             "commit-contains",
-            "Filters after certain commit hashes. ORs if multiple specified.",
+            "Filter for certain commit hashes. ORs if specified multiple times.",
             "HASH",
         )
         .optmulti(
             "",
             "commit-equals",
-            "Filters after certain commit hashes. ORs if multiple specified.",
+            "Filter for certain commit hashes. ORs if specified multiple times.",
             "HASH",
         )
         .optmulti(
             "m",
             "message-contains",
-            "Filters after certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
         .optmulti(
             "",
             "message-equals",
-            "Filters after certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
         .optmulti(
             "l",
             "message-starts-with",
-            "Filters after certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
         .optmulti(
             "f",
             "file-extension",
-            "Filters loc after certain file extension (e.g. `--file-extension cpp`). ORs if multiple specified.",
+            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.",
             "EXTENSION",
         )
         .optopt(
             "d",
             "duration",
-            "The time, which may pass between two commits, that still counts as working.",
+            "The time which may pass between two commits that still counts as working.",
             "HOURS",
         )
         .optopt(
             "o",
             "output",
-            "An output file for the commits per day in csv format.",
+            "An output file for the commits per day in CSV format.",
             "FILE",
         );
     let matches = match opts.parse(std::env::args()) {
@@ -100,7 +99,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     let path = matches.opt_str("output");
     let commits_path = &matches.free[1];
-    let commits = std::fs::read_to_string(commits_path).unwrap();
+    let commits = fs::read_to_string(commits_path).unwrap();
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
     while !commits.is_empty() {
@@ -161,7 +160,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Found {} commits overall", commit_count);
 
     if let Some(path) = path {
-        let mut file = std::fs::File::create(path)?;
+        let mut file = fs::File::create(path)?;
         let mut sorted_per_day_data = vec![];
         for key in commits_per_day.keys() {
             let commit_count = commits_per_day[key];
@@ -178,17 +177,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// A small in-app documentation.
+/// A brief in-app documentation.
 ///
 /// This function will write a brief usage information, including a short
 /// introduction to the meaning of the configured `options`, to `stdout`.
-fn usage(options: &Options) {
+fn usage(options: &getopts::Options) {
     println!(
-        "Usage:  commit-analyzer <FILE> [OPTIONS]\n\n{}",
-        options.usage("Parses the output of `git log`.")
+        "Parses the output of `git log`.\n\n{}",
+        options.usage("Usage: commit-analyzer <FILE> [OPTIONS]")
     );
 }
 
+/// An abbreviation for the filter checks.
+///
+/// This function checks whether the given `commit` matches the expectations
+/// defined in the given `filter`.
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
     filter.check_author_name(&commit.author.name)
         && filter.check_author_email(&commit.author.email)
