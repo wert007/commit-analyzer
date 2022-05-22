@@ -3,78 +3,78 @@ use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError,
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
-        .optflag("q", "quiet", "Hides the output of commit messages.")
+        .optflag("q", "quiet", "Hide the output of commit messages.")
         .optflag("h", "help", "Show this help and exit.")
         .optmulti(
             "a",
             "author-contains",
-            "Filters after certain author names. ORs if multiple specified.",
+            "Filter for certain author names. ORs if multiple specified.",
             "NAME",
         )
         .optmulti(
             "",
             "author-equals",
-            "Filters after certain author names. ORs if multiple specified.",
+            "Filter for certain author names. ORs if multiple specified.",
             "NAME",
         )
         .optmulti(
             "e",
             "email-contains",
-            "Filters after certain author emails. ORs if multiple specified.",
+            "Filter for certain author emails. ORs if multiple specified.",
             "EMAIL",
         )
         .optmulti(
             "",
             "email-equals",
-            "Filters after certain author emails. ORs if multiple specified.",
+            "Filter for certain author emails. ORs if multiple specified.",
             "EMAIL",
         )
         .optmulti(
             "c",
             "commit-contains",
-            "Filters after certain commit hashes. ORs if multiple specified.",
+            "Filter for certain commit hashes. ORs if multiple specified.",
             "HASH",
         )
         .optmulti(
             "",
             "commit-equals",
-            "Filters after certain commit hashes. ORs if multiple specified.",
+            "Filter for certain commit hashes. ORs if multiple specified.",
             "HASH",
         )
         .optmulti(
             "m",
             "message-contains",
-            "Filters after certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if multiple specified.",
             "MESSAGE",
         )
         .optmulti(
             "",
             "message-equals",
-            "Filters after certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if multiple specified.",
             "MESSAGE",
         )
         .optmulti(
             "l",
             "message-starts-with",
-            "Filters after certain commit messages. ORs if multiple specified.",
+            "Filter for certain commit messages. ORs if multiple specified.",
             "MESSAGE",
         )
         .optmulti(
             "f",
             "file-extension",
-            "Filters loc after certain file extension (e.g. `--file-extension cpp`). ORs if multiple specified.",
+            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if multiple specified.",
             "EXTENSION",
         )
         .optopt(
             "d",
             "duration",
-            "The time, which may pass between two commits, that still counts as working.",
+            "The time which may pass between two commits that still counts as working.",
             "HOURS",
         )
         .optopt(
             "o",
             "output",
-            "An output file for the commits per day in csv format.",
+            "An output file for the commits per day in CSV format.",
             "FILE",
         );
     let matches = match opts.parse(std::env::args()) {
@@ -184,7 +184,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn usage(options: &getopts::Options) {
     println!(
         "Parses the output of `git log`.\n\n{}",
-        options.usage("Usage:  commit-analyzer <FILE> [OPTIONS]")
+        options.usage("Usage: commit-analyzer <FILE> [OPTIONS]")
     );
 }
 
