@@ -16,6 +16,12 @@ pub const APP_TOOL_TIP: &str = "<FILE> [OPTIONS]";
 
 /// This application's version information.
 ///
+/// This constant represents this application's fix level.
+#[allow(dead_code)]
+pub const VERSIO_FIX_LEVEL: u8 = 0u8;
+
+/// This application's version information.
+///
 /// This constant represents this application's major version.
 #[allow(dead_code)]
 pub const VERSION_MAJOR: u8 = 0u8;
@@ -25,9 +31,3 @@ pub const VERSION_MAJOR: u8 = 0u8;
 /// This constant represents this application's minor version.
 #[allow(dead_code)]
 pub const VERSION_MINOR: u8 = 1u8;
-
-/// This application's version information.
-///
-/// This constant represents this application's fix level.
-#[allow(dead_code)]
-pub const VERSIO_FIX_LEVEL: u8 = 0u8;
