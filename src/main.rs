@@ -1,7 +1,5 @@
 use getopts::Options;
-use std::{
-    collections::HashMap, env, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign,
-};
+use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = Options::new();
@@ -80,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             "An output file for the commits per day in csv format.",
             "FILE",
         );
-    let matches = match opts.parse(env::args()) {
+    let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
             usage(opts);
