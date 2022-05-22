@@ -29,7 +29,22 @@ main directory of this repository.
 
 ## Configured Options
 
-| Option    | Brief | Meaning                                                  |
-|:---------:|:-----:|:---------------------------------------------------------|
-| `--help`  | `-h`  | Show this help and exit.                                 |
+| Option                    | Brief | Meaning                                                                   |
+|:-------------------------:|:-----:|:--------------------------------------------------------------------------|
+| `--author-contains`       | `-a`  | (**OR**) Filter for certain author names.                                 |
+| `--author-equals`         |       | (**OR**) Filter for certain author names.                                 |
+| `--commit-contains`       | `-c`  | (**OR**) Filter for certain commit hashes.                                |
+| `--commit-equals`         |       | (**OR**) Filter for certain commit hashes.                                |
+| `--email-contains`        | `-e`  | (**OR**) Filter for certain author emails.                                |
+| `--email-equals`          |       | (**OR**) Filter for certain author emails.                                |
+| `--duration`              | `-d`  | The time which may pass between two commits that still counts as working. |
+| `--file-extension`        | `-f`  | (**OR**) Filter loc for certain file extension, e.g.`-f cpp`.             |
+| `--help`                  | `-h`  | Show this help and exit.                                                  |
+| `--message-contains`      | `-m`  | (**OR**) Filter for certain commit messages.                              |
+| `--message-equals`        |       | (**OR**) Filter for certain commit messages.                              |
+| `--message-starts-with`   | `-l`  | (**OR**) Filter for certain commit messages.                              |
+| `--output`                | `-o`  | An output file for the commits per day in CSV format.                     |
+| `--quiet`                 | `-q`  | Hide the output of commit messages.                                       |
 
+Options marked with **OR** in their explanation can be specified multiple times
+and will be evaluated by joining them using the logical OR (`||`).
