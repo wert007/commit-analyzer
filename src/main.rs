@@ -1,4 +1,3 @@
-use chrono::{DateTime, Duration, FixedOffset, ParseError};
 use getopts::Options;
 use std::{
     collections::HashMap, env, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign,
@@ -120,7 +119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     let mut last_time = None;
-    let mut duration = Duration::zero();
+    let mut duration = chrono::Duration::zero();
     let filter = Filter {
         author_equals: matches.opt_strs("author-equals"),
         author_contains: matches.opt_strs("author-contains"),
@@ -148,7 +147,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .or_insert(0)
                 .add_assign(commit.loc(&filter));
             if let Some(last_time) = last_time {
-                let diff: Duration = commit.date - last_time;
+                let diff: chrono::Duration = commit.date - last_time;
                 if diff.num_hours() <= max_diff_hours as i64 {
                     duration = duration + diff;
                 }
@@ -268,7 +267,7 @@ enum CommitParseError {
     AuthorMissing,
     DateMissing,
     AuthorFailed(AuthorParseError),
-    DateFailed(ParseError),
+    DateFailed(chrono::ParseError),
     LocSyntaxError,
     LocFailed(LocParseError),
     Unknown,
@@ -351,7 +350,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         commit: commit.into(),
         merge,
         author: Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
-        date: DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
+        date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
             .map_err(CommitParseError::DateFailed)?,
         message: message.into(),
         locs,
@@ -367,7 +366,7 @@ pub struct Commit {
     #[allow(dead_code)]
     merge: Option<String>,
     author: Author,
-    date: DateTime<FixedOffset>,
+    date: chrono::DateTime<chrono::FixedOffset>,
     message: String,
     locs: Vec<Loc>,
 }
