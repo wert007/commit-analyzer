@@ -1,8 +1,7 @@
-use getopts::Options;
 use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut opts = Options::new();
+    let mut opts = getopts::Options::new();
     let opts = opts
         .optflag("q", "quiet", "Hides the output of commit messages.")
         .optflag("h", "help", "Show this help and exit.")
@@ -182,7 +181,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 ///
 /// This function will write a brief usage information, including a short
 /// introduction to the meaning of the configured `options`, to `stdout`.
-fn usage(options: &Options) {
+fn usage(options: &getopts::Options) {
     println!(
         "Parses the output of `git log`.\n\n{}",
         options.usage("Usage:  commit-analyzer <FILE> [OPTIONS]")
