@@ -1,5 +1,7 @@
 use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
 
+mod settings;
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
@@ -184,7 +186,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn usage(options: &getopts::Options) {
     println!(
         "Parses the output of `git log`.\n\n{}",
-        options.usage("Usage: commit-analyzer <FILE> [OPTIONS]")
+        options.usage(&format!(
+            "Usage: {} {}",
+            settings::APP_NAME,
+            settings::APP_TOOL_TIP
+        ))
     );
 }
 
