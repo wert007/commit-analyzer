@@ -18,7 +18,7 @@ pub const APP_TOOL_TIP: &str = "<FILE> [OPTIONS]";
 ///
 /// This constant represents this application's fix level.
 #[allow(dead_code)]
-pub const VERSIO_FIX_LEVEL: u8 = 0u8;
+pub const VERSION_FIX_LEVEL: u8 = 0u8;
 
 /// This application's version information.
 ///
