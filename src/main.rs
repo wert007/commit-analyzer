@@ -188,8 +188,8 @@ fn usage(options: &getopts::Options) {
         "Parses the output of `git log`.\n\n{}",
         options.usage(&format!(
             "Usage: {} {}",
-            settings::APP_NAME,
-            settings::APP_TOOL_TIP
+            settings::application::NAME,
+            settings::application::TOOL_TIP
         ))
     );
 }
