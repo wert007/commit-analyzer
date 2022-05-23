@@ -22,6 +22,14 @@ impl Loc {
         String::from(&self.file)
     }
 
+    pub fn loc(&self) -> i64 {
+        if self.added.is_none() && self.removed.is_none() {
+            0
+        } else {
+            self.added.unwrap() as i64 - self.removed.unwrap() as i64
+        }
+    }
+
     pub fn parse(loc: &str) -> Result<Self, LocParseError> {
         let (added, remainder) = loc
             .split_once('\t')
@@ -45,13 +53,5 @@ impl Loc {
             removed,
             file,
         })
-    }
-
-    pub fn loc(&self) -> i64 {
-        if self.added.is_none() && self.removed.is_none() {
-            0
-        } else {
-            self.added.unwrap() as i64 - self.removed.unwrap() as i64
-        }
     }
 }
