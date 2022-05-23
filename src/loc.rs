@@ -5,13 +5,20 @@
 
 use std::num::ParseIntError;
 
+/// The loc a certain commit introduces.
 #[derive(Debug)]
 pub struct Loc {
+    /// The count of insertions.
     added: Option<u32>,
+
+    /// The count of deletions.
     removed: Option<u32>,
+
+    /// The affected file.
     file: String,
 }
 
+/// The methods and associated functions on and for a loc, respecitvely.
 impl Loc {
     /// The getter method for the field `file` of the corresponding struct.
     ///
@@ -34,6 +41,7 @@ impl Loc {
         }
     }
 
+    /// Extract the loc information from the given line.
     pub fn parse(loc: &str) -> Result<Self, LocParseError> {
         let (added, remainder) = loc
             .split_once('\t')
