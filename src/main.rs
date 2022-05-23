@@ -185,7 +185,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 /// introduction to the meaning of the configured `options`, to `stdout`.
 fn usage(options: &getopts::Options) {
     println!(
-        "Parses the output of `git log`.\n\n{}",
+        "{}, version {}.{}.{}. {}\n\n{}",
+        settings::application::NAME,
+        settings::version::MAJOR,
+        settings::version::MINOR,
+        settings::version::FIX_LEVEL,
+        settings::application::DESCRIPTION,
         options.usage(&format!(
             "Usage: {} {}",
             settings::application::NAME,
