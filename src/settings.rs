@@ -21,20 +21,20 @@ pub mod application {
     pub const TOOL_TIP: &str = "<FILE> [OPTIONS]";
 }
 
-/// This application's version information.
+/// Version related settings.
 ///
-/// This constant represents this application's fix level.
-#[allow(dead_code)]
-pub const VERSION_FIX_LEVEL: u8 = 0u8;
+/// This module defines the current version of this applciation analogeously to
+/// `Cargo.toml`.
+pub mod version {
+    /// This application's fix level.
+    #[allow(dead_code)]
+    pub const FIX_LEVEL: u8 = 0u8;
 
-/// This application's version information.
-///
-/// This constant represents this application's major version.
-#[allow(dead_code)]
-pub const VERSION_MAJOR: u8 = 0u8;
+    /// This application's major version.
+    #[allow(dead_code)]
+    pub const MAJOR: u8 = 0u8;
 
-/// This application's version information.
-///
-/// This constant represents this application's minor version.
-#[allow(dead_code)]
-pub const VERSION_MINOR: u8 = 1u8;
+    /// This application's minor version.
+    #[allow(dead_code)]
+    pub const MINOR: u8 = 1u8;
+}
