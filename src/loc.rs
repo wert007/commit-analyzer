@@ -22,11 +22,15 @@ impl Loc {
         String::from(&self.file)
     }
 
+    /// Calculate the loc.
+    ///
+    /// The loc is the sum of all insertions and deletions into and from a given
+    /// file, respectively.
     pub fn loc(&self) -> i64 {
         if self.added.is_none() && self.removed.is_none() {
             0
         } else {
-            self.added.unwrap() as i64 - self.removed.unwrap() as i64
+            self.added.unwrap() as i64 + self.removed.unwrap() as i64
         }
     }
 
@@ -37,17 +41,21 @@ impl Loc {
         let (removed, file) = remainder
             .split_once('\t')
             .ok_or(LocParseError::SecondTabulatorMissing)?;
+
         let added = if added == "-" {
             None
         } else {
             Some(added.parse().map_err(LocParseError::AddedParseError)?)
         };
+
         let removed = if removed == "-" {
             None
         } else {
             Some(removed.parse().map_err(LocParseError::RemovedParseError)?)
         };
+
         let file = file.into();
+
         Ok(Self {
             added,
             removed,
