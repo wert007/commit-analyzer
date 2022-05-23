@@ -1,5 +1,9 @@
 use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
 
+mod author;
+mod commit;
+mod filter;
+mod loc;
 mod settings;
 
 fn main() -> Result<(), Box<dyn Error>> {
