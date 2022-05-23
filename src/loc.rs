@@ -3,14 +3,6 @@
 use std::num::ParseIntError;
 
 #[derive(Debug)]
-pub enum LocParseError {
-    FirstTabulatorMissing,
-    SecondTabulatorMissing,
-    AddedParseError(ParseIntError),
-    RemovedParseError(ParseIntError),
-}
-
-#[derive(Debug)]
 pub struct Loc {
     added: Option<u32>,
     removed: Option<u32>,
@@ -54,4 +46,12 @@ impl Loc {
             file,
         })
     }
+}
+
+#[derive(Debug)]
+pub enum LocParseError {
+    FirstTabulatorMissing,
+    SecondTabulatorMissing,
+    AddedParseError(ParseIntError),
+    RemovedParseError(ParseIntError),
 }
