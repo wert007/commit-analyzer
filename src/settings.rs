@@ -10,6 +10,11 @@
 
 /// Application related settings.
 pub mod application {
+    /// This application's purpose.
+    ///
+    /// A brief summary what this application is supposed to do.
+    pub const DESCRIPTION: &str = "Parse the output of `git log`.";
+
     /// This application's name.
     pub const NAME: &str = "commit-analyzer";
 
@@ -27,14 +32,11 @@ pub mod application {
 /// `Cargo.toml`.
 pub mod version {
     /// This application's fix level.
-    #[allow(dead_code)]
     pub const FIX_LEVEL: u8 = 0u8;
 
     /// This application's major version.
-    #[allow(dead_code)]
     pub const MAJOR: u8 = 0u8;
 
     /// This application's minor version.
-    #[allow(dead_code)]
     pub const MINOR: u8 = 1u8;
 }
