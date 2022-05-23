@@ -56,10 +56,27 @@ impl Loc {
     }
 }
 
+/// The set of errors which may occur.
+///
+/// This enum describes the possible errors when parsing a loc.  A valid loc
+/// consists of
+/// * the integral number of insertions,
+/// * the integral number of deletions, and
+/// * the affected file
+/// with each of these pieces of information being separated by a tab character.
+/// In case that some of these assumptions should fail, an according error from
+/// this set will occur.
 #[derive(Debug)]
 pub enum LocParseError {
+    /// The tab character between the insertions and deletions is missing.
     FirstTabulatorMissing,
+
+    /// The tab character between the deletions and the file's name is missing.
     SecondTabulatorMissing,
+
+    /// The number of insertions could not be parsed correctly.
     AddedParseError(ParseIntError),
+
+    /// The number of deletions could not be parsed correctly.
     RemovedParseError(ParseIntError),
 }
