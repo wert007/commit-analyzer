@@ -1,4 +1,7 @@
 //! The `Loc` struct and related utilities.
+//!
+//! This module defines the `Loc` data structure together with its utility enum
+//! `LocParseError`.
 
 use std::num::ParseIntError;
 
