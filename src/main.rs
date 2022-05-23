@@ -89,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         usage(opts);
         return Ok(());
     }
-    let is_quiet = matches.opt_present("q");
+    let is_verbose = matches.opt_present("V");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
@@ -151,7 +151,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             last_time = Some(commit.date);
-            if !is_quiet {
+            if is_verbose {
                 println!("{:#?}", commit);
             }
         }
