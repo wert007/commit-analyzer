@@ -31,13 +31,14 @@ impl Loc {
 
     /// Calculate the loc.
     ///
-    /// The loc is the sum of all insertions and deletions into and from a given
-    /// file, respectively.
+    /// LOC is the measure how many **l**ines **o**f **c**ode the project to
+    /// analyse has at the moment.  This method will tell how much it grew
+    /// or shrunk due to the committed changes.
     pub fn loc(&self) -> i64 {
         if self.added.is_none() && self.removed.is_none() {
             0
         } else {
-            self.added.unwrap() as i64 + self.removed.unwrap() as i64
+            self.added.unwrap() as i64 - self.removed.unwrap() as i64
         }
     }
 
