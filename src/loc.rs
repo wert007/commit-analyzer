@@ -2,10 +2,14 @@
 //!
 //! This module defines the `Loc` data structure together with its utility enum
 //! `LocParseError`.
+//!
+//! LOC is the abbreviation for **l**ines **o**f **c**ode and is a possible
+//! measure in order to tell how a project has grown or shrunk due to a set of
+//! changes applied to it.
 
 use std::num::ParseIntError;
 
-/// The loc a certain commit introduces.
+/// The LOC diff a certain commit introduces.
 #[derive(Debug)]
 pub struct Loc {
     /// The count of insertions.
@@ -18,7 +22,8 @@ pub struct Loc {
     file: String,
 }
 
-/// The methods and associated functions on and for a loc, respecitvely.
+/// The methods and associated functions on and for a `Loc` instance,
+/// respectively.
 impl Loc {
     /// The getter method for the field `file` of the corresponding struct.
     ///
@@ -29,11 +34,7 @@ impl Loc {
         String::from(&self.file)
     }
 
-    /// Calculate the loc.
-    ///
-    /// LOC is the measure how many **l**ines **o**f **c**ode the project to
-    /// analyse has at the moment.  This method will tell how much it grew
-    /// or shrunk due to the committed changes.
+    /// Calculate the LOC diff.
     pub fn loc(&self) -> i64 {
         if self.added.is_none() && self.removed.is_none() {
             0
@@ -42,7 +43,7 @@ impl Loc {
         }
     }
 
-    /// Extract the loc information from the given line.
+    /// Extract the LOC diff information from the given line.
     pub fn parse(loc: &str) -> Result<Self, LocParseError> {
         let (added, remainder) = loc
             .split_once('\t')
