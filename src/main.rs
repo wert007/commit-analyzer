@@ -3,6 +3,7 @@ use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError,
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
+        .optflag("V", "verbose", "Always show the entire output.")
         .optflag("q", "quiet", "Hide the output of commit messages.")
         .optflag("h", "help", "Show this help and exit.")
         .optmulti(

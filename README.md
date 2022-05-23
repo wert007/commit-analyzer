@@ -45,6 +45,7 @@ main directory of this repository.
 | `--message-starts-with`   | `-l`  | (**OR**) Filter for certain commit messages.                              |
 | `--output`                | `-o`  | An output file for the commits per day in CSV format.                     |
 | `--quiet`                 | `-q`  | Hide the output of commit messages.                                       |
+| `--verbose`               | `-V`  | Always show the entire output.                                            |
 
 Options marked with **OR** in their explanation can be specified multiple times
 and will be evaluated by joining them using the logical OR (`||`).
