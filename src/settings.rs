@@ -1,18 +1,25 @@
 //! The global variables of this project.
 //!
 //! This module specifies the magic numbers of this project once and centrally
-//! in order to avoid redundancy.
+//! in order to avoid redundancy and to enhance the maintainability.
+//!
+//! The constants are grouped by the following categories:
+//!
+//! * `application`: application related information, and
+//! * `version`: version information
 
-/// This application's name.
-#[allow(dead_code)]
-pub const APP_NAME: &str = "commit-analyzer";
+/// Application related settings.
+pub mod application {
+    /// This application's name.
+    pub const NAME: &str = "commit-analyzer";
 
-/// This application's tool tip.
-///
-/// In order to show a brief usage synopsis to the user, this global variable
-/// sets the information about the required and optional command line arguments.
-#[allow(dead_code)]
-pub const APP_TOOL_TIP: &str = "<FILE> [OPTIONS]";
+    /// This application's tool tip.
+    ///
+    /// In order to show a brief usage synopsis to the user, this global
+    /// variable sets the information about the required and optional command
+    /// line arguments.
+    pub const TOOL_TIP: &str = "<FILE> [OPTIONS]";
+}
 
 /// This application's version information.
 ///
