@@ -3,7 +3,7 @@ use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError,
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
-        .optflag("q", "quiet", "Hide the output of commit messages.")
+        .optflag("v", "verbose", "Always show the entire output.")
         .optflag("h", "help", "Show this help and exit.")
         .optmulti(
             "a",
@@ -84,11 +84,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present("h") || matches.free.len() < 2 {
+    if matches.opt_present("help") || matches.free.len() < 2 {
         usage(opts);
         return Ok(());
     }
-    let is_quiet = matches.opt_present("q");
+    let is_verbose = matches.opt_present("verbose");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
@@ -150,7 +150,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             last_time = Some(commit.date);
-            if !is_quiet {
+            if is_verbose {
                 println!("{:#?}", commit);
             }
         }
