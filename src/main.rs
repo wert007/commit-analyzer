@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
+use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
@@ -164,7 +164,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Found {} commits overall", commit_count);
 
     if let Some(path) = path {
-        let mut file = fs::File::create(path)?;
+        let mut file = std::fs::File::create(path)?;
         let mut sorted_per_day_data = vec![];
         for key in commits_per_day.keys() {
             let commit_count = commits_per_day[key];
