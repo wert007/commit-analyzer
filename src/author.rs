@@ -1,18 +1,40 @@
+//! The `Author` struct and related utilities.
+//!
+//! This module defines the `Author` data structure together with its utility
+//! enum `AuthorParseError`.
+
+/// The author information.
 #[derive(Debug)]
 pub struct Author {
-    name: String,
+    /// The electronic contact information of the author.
     email: String,
+
+    /// The author's name.
+    name: String,
 }
 
+/// The methods and associated functions on and for an `Author` instance,
+/// respectively.
 impl Author {
+    /// The getter method for the field `email` of the corresponding struct.
+    ///
+    /// Since the struct `Author` defines its field `email` to be private, this
+    /// getter is utilised in order to operate on this field.  It returns a
+    /// read-only deep copy of the content.
     pub fn email(&self) -> String {
         String::from(&self.email)
     }
 
+    /// The getter method for the field `name` of the corresponding struct.
+    ///
+    /// Since the struct `Author` defines its field `name` to be private, this
+    /// getter is utilised in order to operate on this field.  It returns a
+    /// read-only deep copy of the content.
     pub fn name(&self) -> String {
         String::from(&self.name)
     }
 
+    /// Extract the author information from the given line.
     pub fn parse(author: &str) -> Result<Author, AuthorParseError> {
         let (name, remainder) = author.split_once('<').ok_or(AuthorParseError::NameFailed)?;
 
@@ -31,6 +53,6 @@ impl Author {
 
 #[derive(Debug)]
 pub enum AuthorParseError {
-    NameFailed,
     EmailFailed,
+    NameFailed,
 }
