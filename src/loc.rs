@@ -1,4 +1,4 @@
-//! The `Loc` struct and related utilities.
+//! The `LocDiff` struct and related utilities.
 //!
 //! This module defines the `LocDiff` data structure together with its utility
 //! enum `LocParseError`.
