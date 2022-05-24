@@ -315,9 +315,11 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
             increase_space_count = true;
             space_count = 0;
         } else if space_count < 4 {
-            remainder_result = &remainder[index..];
             break;
         }
+        // This removes the char from remainder, before adding it to the
+        // message.
+        remainder_result = &remainder[index + char.len_utf8()..];
         if !increase_space_count {
             message.push(char);
         }
@@ -332,7 +334,12 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         let (loc, remainder) = remainder_result
             .split_once('\n')
             .ok_or(CommitParseError::LocSyntaxError)?;
-        if loc.is_empty() || loc.starts_with("commit") {
+        if loc.is_empty() {
+            // We still need to consume the last line feed, otherwise the parser
+            // will fail on the last commit.
+            remainder_result = remainder;
+            break;
+        } else if loc.starts_with("commit") {
             break;
         }
         locs.push(Loc::parse(loc).map_err(CommitParseError::LocFailed)?);
