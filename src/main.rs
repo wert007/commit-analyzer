@@ -1,3 +1,4 @@
+use author::Author;
 use loc::LocDiff;
 use std::{collections::HashMap, error::Error, fs, io::Write, ops::AddAssign};
 
@@ -209,8 +210,8 @@ fn usage(options: &getopts::Options) {
 /// This function checks whether the given `commit` matches the expectations
 /// defined in the given `filter`.
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
-    filter.check_author_name(&commit.author.name)
-        && filter.check_author_email(&commit.author.email)
+    filter.check_author_name(&commit.author.name())
+        && filter.check_author_email(&commit.author.email())
         && filter.check_commit(&commit.commit)
         && filter.check_message(&commit.message)
 }
@@ -279,7 +280,7 @@ enum CommitParseError {
     CommitMissing,
     AuthorMissing,
     DateMissing,
-    AuthorFailed(AuthorParseError),
+    AuthorFailed(author::AuthorParseError),
     DateFailed(chrono::ParseError),
     LocSyntaxError,
     LocFailed(loc::LocParseError),
@@ -391,30 +392,5 @@ impl Commit {
             .filter(|l| filter.check_loc(l))
             .map(|l| l.loc())
             .sum()
-    }
-}
-
-#[derive(Debug)]
-pub struct Author {
-    name: String,
-    email: String,
-}
-
-#[derive(Debug)]
-enum AuthorParseError {
-    NameFailed,
-    EmailFailed,
-}
-
-impl Author {
-    fn parse(author: &str) -> Result<Author, AuthorParseError> {
-        let (name, remainder) = author.split_once('<').ok_or(AuthorParseError::NameFailed)?;
-        let email = remainder
-            .strip_suffix('>')
-            .ok_or(AuthorParseError::EmailFailed)?;
-        Ok(Self {
-            name: name.trim().into(),
-            email: email.trim().into(),
-        })
     }
 }
