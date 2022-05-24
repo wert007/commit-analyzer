@@ -101,9 +101,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let commits = std::process::Command::new("git")
         .arg("log")
         .arg("--numstat")
-        .output()
-        .expect("This is not a Git repository");
-    let commits = String::from_utf8(commits.stdout).unwrap();
+        .output()?;
+    let commits = String::from_utf8(commits.stdout)?;
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
     while !commits.is_empty() {
