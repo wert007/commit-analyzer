@@ -22,7 +22,7 @@ pub struct LocDiff {
     file: String,
 }
 
-/// The methods and associated functions on and for a `Loc` instance,
+/// The methods and associated functions on and for a `LocDiff` instance,
 /// respectively.
 impl LocDiff {
     /// The getter method for the field `file` of the corresponding struct.
