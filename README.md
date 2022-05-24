@@ -36,7 +36,7 @@ main directory of this repository.
 | `--email-contains`        | `-e`  | (**OR**) Filter for certain author emails.                                |
 | `--email-equals`          |       | (**OR**) Filter for certain author emails.                                |
 | `--duration`              | `-d`  | The time which may pass between two commits that still counts as working. |
-| `--file-extension`        | `-f`  | (**OR**) Filter loc for certain file extension, e.g.`-f cpp`.             |
+| `--file-extension`        | `-f`  | (**OR**) Filter loc for certain file extension, e.g. `-f cpp`.            |
 | `--help`                  | `-h`  | Show this help and exit.                                                  |
 | `--message-contains`      | `-m`  | (**OR**) Filter for certain commit messages.                              |
 | `--message-equals`        |       | (**OR**) Filter for certain commit messages.                              |
