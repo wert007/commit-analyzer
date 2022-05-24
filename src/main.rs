@@ -84,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present("help") || matches.free.len() < 2 {
+    if matches.opt_present("help") {
         usage(opts);
         return Ok(());
     }
@@ -98,8 +98,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
     let path = matches.opt_str("output");
-    let commits_path = &matches.free[1];
-    let commits = fs::read_to_string(commits_path).unwrap();
+    let commits = std::process::Command::new("git")
+        .arg("log")
+        .arg("--numstat")
+        .output()
+        .expect("This is not a Git repository");
+    let commits = String::from_utf8(commits.stdout).unwrap();
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
     while !commits.is_empty() {
