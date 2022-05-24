@@ -11,7 +11,7 @@ use std::num::ParseIntError;
 
 /// The LOC diff a certain commit introduces.
 #[derive(Debug)]
-pub struct Loc {
+pub struct LocDiff {
     /// The count of insertions.
     added: Option<u32>,
 
@@ -24,7 +24,7 @@ pub struct Loc {
 
 /// The methods and associated functions on and for a `Loc` instance,
 /// respectively.
-impl Loc {
+impl LocDiff {
     /// The getter method for the field `file` of the corresponding struct.
     ///
     /// Since the struct `Loc` defines its field `file` to be private, this
@@ -66,7 +66,7 @@ impl Loc {
 
         let file = file.into();
 
-        Ok(Self {
+        Ok(LocDiff {
             added,
             removed,
             file,
@@ -82,7 +82,7 @@ impl Loc {
 /// * the integral number of deletions, and
 /// * the affected file
 /// with each of these pieces of information being separated by a tab character.
-/// 
+///
 /// In case that some of these assumptions should fail, an according error from
 /// this enum will occur.
 #[derive(Debug)]

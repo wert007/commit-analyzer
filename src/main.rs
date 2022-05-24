@@ -1,4 +1,4 @@
-use loc::Loc;
+use loc::LocDiff;
 use std::{collections::HashMap, error::Error, fs, io::Write, ops::AddAssign};
 
 mod author;
@@ -265,7 +265,7 @@ impl Filter {
         equals && contains && starts_with
     }
 
-    fn check_loc(&self, loc: &&Loc) -> bool {
+    fn check_loc(&self, loc: &&LocDiff) -> bool {
         self.file_extension.is_empty()
             || self
                 .file_extension
@@ -351,7 +351,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         if loc.is_empty() || loc.starts_with("commit") {
             break;
         }
-        locs.push(Loc::parse(loc).map_err(CommitParseError::LocFailed)?);
+        locs.push(LocDiff::parse(loc).map_err(CommitParseError::LocFailed)?);
         remainder_result = remainder;
         if let Some(remainder) = remainder_result.strip_prefix('\n') {
             remainder_result = remainder;
@@ -381,7 +381,7 @@ pub struct Commit {
     author: Author,
     date: chrono::DateTime<chrono::FixedOffset>,
     message: String,
-    locs: Vec<Loc>,
+    locs: Vec<LocDiff>,
 }
 
 impl Commit {
