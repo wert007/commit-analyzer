@@ -62,6 +62,9 @@ impl Author {
 /// this enum will occur.
 #[derive(Debug)]
 pub enum AuthorParseError {
+    /// Parsing the email was not possible.
     EmailFailed,
+
+    /// Parsing the name was not possible.
     NameFailed,
 }
