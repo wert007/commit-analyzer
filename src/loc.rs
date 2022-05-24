@@ -27,7 +27,7 @@ pub struct LocDiff {
 impl LocDiff {
     /// The getter method for the field `file` of the corresponding struct.
     ///
-    /// Since the struct `Loc` defines its field `file` to be private, this
+    /// Since the struct `LocDiff` defines its field `file` to be private, this
     /// getter is utilised in order to operate on this field.  It returns a
     /// read-only deep copy of the content.
     pub fn file(&self) -> String {
