@@ -57,6 +57,9 @@ impl Author {
 /// A valid author information consists of
 /// * the specified name, and
 /// * the specified email address, wrapped in sharp brackest (`<>`).
+///
+/// In case that some of the assumptions should fail, an according error from
+/// this enum will occur.
 #[derive(Debug)]
 pub enum AuthorParseError {
     EmailFailed,
