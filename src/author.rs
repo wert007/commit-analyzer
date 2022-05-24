@@ -19,7 +19,7 @@ impl Author {
     /// The getter method for the field `email` of the corresponding struct.
     ///
     /// Since the struct `Author` defines its field `email` to be private, this
-    /// getter is utilised in order to operate on this field.  It returns a
+    /// getter is used in order to operate on this field.  It returns a
     /// read-only deep copy of the content.
     pub fn email(&self) -> String {
         String::from(&self.email)
@@ -28,7 +28,7 @@ impl Author {
     /// The getter method for the field `name` of the corresponding struct.
     ///
     /// Since the struct `Author` defines its field `name` to be private, this
-    /// getter is utilised in order to operate on this field.  It returns a
+    /// getter is used in order to operate on this field.  It returns a
     /// read-only deep copy of the content.
     pub fn name(&self) -> String {
         String::from(&self.name)
