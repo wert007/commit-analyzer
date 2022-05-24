@@ -64,12 +64,10 @@ impl LocDiff {
             Some(removed.parse().map_err(LocParseError::RemovedParseError)?)
         };
 
-        let file = file.into();
-
         Ok(Self {
             added,
             removed,
-            file,
+            file: String::from(file),
         })
     }
 }
