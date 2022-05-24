@@ -66,7 +66,7 @@ impl LocDiff {
 
         let file = file.into();
 
-        Ok(LocDiff {
+        Ok(Self {
             added,
             removed,
             file,
