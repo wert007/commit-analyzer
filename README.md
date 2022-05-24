@@ -14,7 +14,7 @@ commit-analyzer --author-equals wert007
 
 You can also give `commit-analyzer` an output file such that it will generate a
 CSV with the date, the number of commits made on the respective days and the LOC
-changes that have been made.
+changes due to them.
 
 ```
 commit-analyzer --output commits-and-loc-by-date.csv
