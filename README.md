@@ -37,7 +37,9 @@ main directory of this repository.
 | `--email-equals`          |       | (**OR**) Filter for certain author emails.                                |
 | `--duration`              | `-d`  | The time which may pass between two commits that still counts as working. |
 | `--file-extension`        | `-f`  | (**OR**) Filter loc for certain file extension, e.g. `-f cpp`.            |
+| `--git`                   |       | Grab the input data from the local Git history.                           |
 | `--help`                  | `-h`  | Show this help and exit.                                                  |
+| `--input`                 | `-i`  | The log file to read from.                                                |
 | `--message-contains`      | `-m`  | (**OR**) Filter for certain commit messages.                              |
 | `--message-equals`        |       | (**OR**) Filter for certain commit messages.                              |
 | `--message-starts-with`   | `-l`  | (**OR**) Filter for certain commit messages.                              |
