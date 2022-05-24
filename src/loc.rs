@@ -1,7 +1,7 @@
 //! The `Loc` struct and related utilities.
 //!
-//! This module defines the `Loc` data structure together with its utility enum
-//! `LocParseError`.
+//! This module defines the `LocDiff` data structure together with its utility
+//! enum `LocParseError`.
 //!
 //! LOC is the abbreviation for the number of **l**ines **o**f **c**ode a
 //! project has and a possible measure to tell how this project has grown or
