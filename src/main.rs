@@ -111,7 +111,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let path = matches.opt_str("input").unwrap();
         std::fs::read_to_string(path)?
     } else {
-        String::new()
+        todo!("Read Git history from `stdin`.");
     };
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
