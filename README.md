@@ -5,11 +5,12 @@
 This is a simple tool which grabs the output of `git log --numstat` and analyzes
 how much time somebody worked on the project.
 
-For instance, simply call the following line to see all commits that fit the
-criteria and how much time was spend creating them.
+For instance, simply call the one of the following lines to see all commits that
+fit the criteria and how much time was spend creating them.
 
 ```
-commit-analyzer --author-equals wert007
+commit-analyzer --git --author-equals wert007
+commit-analyzer --input git.log --author-equals wert007
 ```
 
 You can also give `commit-analyzer` an output file such that it will generate a
@@ -17,7 +18,8 @@ CSV with the date, the number of commits made on the respective days and the LOC
 changes due to them.
 
 ```
-commit-analyzer --output commits-and-loc-by-date.csv
+commit-analyzer --git --output commits-and-loc-by-date.csv
+commit-analyzer --input git.log --output commits-and-loc-by-date.csv
 ```
 
 ## License
