@@ -1,10 +1,11 @@
-use std::{collections::HashMap, error::Error, fs, io::Write, num::ParseIntError, ops::AddAssign};
+use std::{collections::HashMap, error::Error, io::Write, num::ParseIntError, ops::AddAssign};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
     let opts = opts
-        .optflag("v", "verbose", "Always show the entire output.")
+        .optflag("", "git", "Grab the input data from the local Git history.")
         .optflag("h", "help", "Show this help and exit.")
+        .optflag("v", "verbose", "Always show the entire output.")
         .optmulti(
             "a",
             "author-contains",
@@ -42,6 +43,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             "HASH",
         )
         .optmulti(
+            "f",
+            "file-extension",
+            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.",
+            "EXTENSION",
+        )
+        .optmulti(
             "m",
             "message-contains",
             "Filter for certain commit messages. ORs if specified multiple times.",
@@ -59,18 +66,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             "Filter for certain commit messages. ORs if specified multiple times.",
             "MESSAGE",
         )
-        .optmulti(
-            "f",
-            "file-extension",
-            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.",
-            "EXTENSION",
-        )
         .optopt(
             "d",
             "duration",
             "The time which may pass between two commits that still counts as working.",
             "HOURS",
         )
+        .optopt("i", "input", "The log file to read from.", "FILE")
         .optopt(
             "o",
             "output",
@@ -84,7 +86,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present("help") || matches.free.len() < 2 {
+    if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
+    {
         usage(opts);
         return Ok(());
     }
@@ -98,8 +101,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
     let path = matches.opt_str("output");
-    let commits_path = &matches.free[1];
-    let commits = fs::read_to_string(commits_path).unwrap();
+    let commits = if matches.opt_present("git") {
+        let process = std::process::Command::new("git")
+            .arg("log")
+            .arg("--numstat")
+            .output()?;
+        String::from_utf8(process.stdout)?
+    } else if matches.opt_present("input") {
+        let path = matches.opt_str("input").unwrap();
+        std::fs::read_to_string(path)?
+    } else {
+        todo!("Read Git history from `stdin`.");
+    };
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
     while !commits.is_empty() {
@@ -160,7 +173,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Found {} commits overall", commit_count);
 
     if let Some(path) = path {
-        let mut file = fs::File::create(path)?;
+        let mut file = std::fs::File::create(path)?;
         let mut sorted_per_day_data = vec![];
         for key in commits_per_day.keys() {
             let commit_count = commits_per_day[key];
@@ -183,8 +196,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 /// introduction to the meaning of the configured `options`, to `stdout`.
 fn usage(options: &getopts::Options) {
     println!(
-        "Parses the output of `git log`.\n\n{}",
-        options.usage("Usage: commit-analyzer <FILE> [OPTIONS]")
+        "Parses the Git history.\n\n{}",
+        options.usage("Usage: commit-analyzer [OPTIONS]")
     );
 }
 
