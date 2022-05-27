@@ -2,6 +2,14 @@
 //!
 //! This module defines the `Author` data structure together with its utility
 //! enum `AuthorParseError`.
+//!
+//! A valid author information consists of
+//!
+//! * the specified name, and
+//! * the specified email address, wrapped in sharp brackets (`<>`).
+//!
+//! In case that some of the assumptions should fail, an according error from
+//! this module will occur.
 
 /// The author information.
 #[derive(Debug)]
@@ -43,15 +51,6 @@ impl Author {
 }
 
 /// The set of errors which may occur.
-///
-/// This enum describes the possible errors when parsing the author information.
-/// A valid author information consists of
-///
-/// * the specified name, and
-/// * the specified email address, wrapped in sharp brackest (`<>`).
-///
-/// In case that some of the assumptions should fail, an according error from
-/// this enum will occur.
 #[derive(Debug)]
 pub enum AuthorParseError {
     /// Parsing the email was not possible.

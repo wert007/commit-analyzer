@@ -6,6 +6,16 @@
 //! LOC is the abbreviation for the number of **l**ines **o**f **c**ode a
 //! project has and a possible measure to tell how this project has grown or
 //! shrunk due to a set of changes applied to it.
+//!
+//! A valid LOC diff consists of
+//!
+//! * the integral number of insertions,
+//! * the integral number of deletions, and
+//! * the affected file
+//!
+//! with each of these pieces of information being separated by a tab character.
+//! In case that some of these assumptions should fail, an according error from
+//! this module will occur.
 
 use std::num::ParseIntError;
 
@@ -68,18 +78,6 @@ impl LocDiff {
 }
 
 /// The set of errors which may occur.
-///
-/// This enum describes the possible errors when parsing the LOC diff
-/// information.  A valid LOC diff consists of
-///
-/// * the integral number of insertions,
-/// * the integral number of deletions, and
-/// * the affected file
-///
-/// with each of these pieces of information being separated by a tab character.
-///
-/// In case that some of these assumptions should fail, an according error from
-/// this enum will occur.
 #[derive(Debug)]
 pub enum LocParseError {
     /// The tab character between the insertions and deletions is missing.

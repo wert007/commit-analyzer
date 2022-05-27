@@ -4,8 +4,9 @@
 //! in order to avoid redundancy and to enhance the maintainability.
 //!
 //! The constants are grouped by the following categories:
-//! * `application`: application related information, and
-//! * `version`: version information
+//!
+//! * `application` related information, and
+//! * `version` information.
 
 /// Application related settings.
 pub mod application {

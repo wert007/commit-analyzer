@@ -1,13 +1,13 @@
 #[derive(Debug, Default)]
 pub struct Filter {
-    author_equals: Vec<String>,
     author_contains: Vec<String>,
-    email_equals: Vec<String>,
+    author_equals: Vec<String>,
     email_contains: Vec<String>,
-    commit_equals: Vec<String>,
+    email_equals: Vec<String>,
     commit_contains: Vec<String>,
-    message_equals: Vec<String>,
+    commit_equals: Vec<String>,
     message_contains: Vec<String>,
+    message_equals: Vec<String>,
     message_starts_with: Vec<String>,
     file_extension: Vec<String>,
 }
@@ -59,7 +59,7 @@ impl Filter {
     /// An abbreviation for the filter checks.
     ///
     /// This function checks whether the given `commit` matches the expectations
-    /// defined in the given `filter`.
+    /// defined in this `filter`.
     pub fn matches(&self, commit: &crate::Commit) -> bool {
         self.check_author_name(commit.author.name())
             && self.check_author_email(commit.author.email())
