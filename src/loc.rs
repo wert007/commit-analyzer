@@ -22,16 +22,11 @@ pub struct LocDiff {
     file: String,
 }
 
-/// The methods and associated functions on and for a `LocDiff` instance,
-/// respectively.
+/// The methods and associated functions on and for a `LocDiff`, respectively.
 impl LocDiff {
     /// The getter method for the field `file` of the corresponding struct.
-    ///
-    /// Since the struct `LocDiff` defines its field `file` to be private, this
-    /// getter is used in order to operate on this field.  It returns a
-    /// read-only deep copy of the content.
-    pub fn file(&self) -> String {
-        String::from(&self.file)
+    pub fn file(&self) -> &str {
+        &self.file
     }
 
     /// Calculate the LOC diff.
@@ -76,9 +71,11 @@ impl LocDiff {
 ///
 /// This enum describes the possible errors when parsing the LOC diff
 /// information.  A valid LOC diff consists of
+///
 /// * the integral number of insertions,
 /// * the integral number of deletions, and
 /// * the affected file
+///
 /// with each of these pieces of information being separated by a tab character.
 ///
 /// In case that some of these assumptions should fail, an according error from

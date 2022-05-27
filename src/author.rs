@@ -13,25 +13,16 @@ pub struct Author {
     name: String,
 }
 
-/// The methods and associated functions on and for an `Author` instance,
-/// respectively.
+/// The methods and associated functions on and for an `Author`, respectively.
 impl Author {
     /// The getter method for the field `email` of the corresponding struct.
-    ///
-    /// Since the struct `Author` defines its field `email` to be private, this
-    /// getter is used in order to operate on this field.  It returns a
-    /// read-only deep copy of the content.
-    pub fn email(&self) -> String {
-        String::from(&self.email)
+    pub fn email(&self) -> &str {
+        &self.email
     }
 
     /// The getter method for the field `name` of the corresponding struct.
-    ///
-    /// Since the struct `Author` defines its field `name` to be private, this
-    /// getter is used in order to operate on this field.  It returns a
-    /// read-only deep copy of the content.
-    pub fn name(&self) -> String {
-        String::from(&self.name)
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// Extract the author information from the given line.
@@ -55,6 +46,7 @@ impl Author {
 ///
 /// This enum describes the possible errors when parsing the author information.
 /// A valid author information consists of
+///
 /// * the specified name, and
 /// * the specified email address, wrapped in sharp brackest (`<>`).
 ///

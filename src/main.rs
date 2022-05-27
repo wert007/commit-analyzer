@@ -223,8 +223,8 @@ fn usage(options: &getopts::Options) {
 /// This function checks whether the given `commit` matches the expectations
 /// defined in the given `filter`.
 fn matches_filter(commit: &Commit, filter: &Filter) -> bool {
-    filter.check_author_name(&commit.author.name())
-        && filter.check_author_email(&commit.author.email())
+    filter.check_author_name(commit.author.name())
+        && filter.check_author_email(commit.author.email())
         && filter.check_commit(&commit.commit)
         && filter.check_message(&commit.message)
 }
