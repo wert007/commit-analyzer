@@ -7,7 +7,6 @@ mod author;
 mod commit;
 mod filter;
 mod loc;
-mod settings;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
@@ -91,13 +90,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
-            usage(opts);
+            commit_analyzer::usage(opts);
             return Err(err.into());
         }
     };
     if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
     {
-        usage(opts);
+        commit_analyzer::usage(opts);
         return Ok(());
     }
     let is_verbose = matches.opt_present("verbose");
@@ -186,26 +185,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
-}
-
-/// A brief in-app documentation.
-///
-/// This function will write a brief usage information, including a short
-/// introduction to the meaning of the configured `options`, to `stdout`.
-fn usage(options: &getopts::Options) {
-    println!(
-        "{}, version {}.{}.{}. {}\n\n{}",
-        settings::application::NAME,
-        settings::version::MAJOR,
-        settings::version::MINOR,
-        settings::version::FIX_LEVEL,
-        settings::application::DESCRIPTION,
-        options.usage(&format!(
-            "Usage: {} {}",
-            settings::application::NAME,
-            settings::application::SYNOPSIS
-        ))
-    );
 }
 
 #[derive(Debug)]
