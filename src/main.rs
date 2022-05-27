@@ -1,9 +1,6 @@
-use filter::Filter;
 use loc::LocDiff;
 use std::{collections::HashMap, error::Error, io::Write, ops::AddAssign};
 
-mod commit;
-mod filter;
 mod loc;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -136,7 +133,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let mut last_time = None;
     let mut duration = chrono::Duration::zero();
-    let filter = Filter::new(&matches);
+    let filter = commit_analyzer::filter::Filter::new(&matches);
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
     let mut loc_per_day = HashMap::new();
@@ -304,7 +301,7 @@ pub struct Commit {
 }
 
 impl Commit {
-    pub fn loc(&self, filter: &Filter) -> i64 {
+    pub fn loc(&self, filter: &commit_analyzer::filter::Filter) -> i64 {
         self.locs
             .iter()
             .filter(|l| filter.check_loc(l))
