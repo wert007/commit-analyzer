@@ -120,15 +120,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut input = String::new();
         loop {
             let mut buffer = String::new();
-            match std::io::stdin().read_line(&mut buffer) {
-                Ok(0) => {
+            match std::io::stdin().read_line(&mut buffer)? {
+                0 => {
                     break;
                 }
-                Ok(_) => {
-                    input = input + &buffer;
-                }
-                Err(error) => {
-                    return Err(error.into());
+                _ => {
+                    input.push_str(&buffer);
                 }
             }
         }
