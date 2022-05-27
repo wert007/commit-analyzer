@@ -1,7 +1,4 @@
-use loc::LocDiff;
 use std::{collections::HashMap, error::Error, io::Write, ops::AddAssign};
-
-mod loc;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut opts = getopts::Options::new();
@@ -190,7 +187,7 @@ enum CommitParseError {
     AuthorFailed(commit_analyzer::author::AuthorParseError),
     DateFailed(chrono::ParseError),
     LocSyntaxError,
-    LocFailed(loc::LocParseError),
+    LocFailed(commit_analyzer::loc::LocParseError),
     Unknown,
 }
 
@@ -266,7 +263,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
         } else if loc.starts_with("commit") {
             break;
         }
-        locs.push(LocDiff::parse(loc).map_err(CommitParseError::LocFailed)?);
+        locs.push(commit_analyzer::loc::LocDiff::parse(loc).map_err(CommitParseError::LocFailed)?);
         remainder_result = remainder;
         if let Some(remainder) = remainder_result.strip_prefix('\n') {
             remainder_result = remainder;
@@ -297,7 +294,7 @@ pub struct Commit {
     author: commit_analyzer::author::Author,
     date: chrono::DateTime<chrono::FixedOffset>,
     message: String,
-    locs: Vec<LocDiff>,
+    locs: Vec<commit_analyzer::loc::LocDiff>,
 }
 
 impl Commit {
