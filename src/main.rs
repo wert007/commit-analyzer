@@ -1,9 +1,7 @@
-use author::Author;
 use filter::Filter;
 use loc::LocDiff;
 use std::{collections::HashMap, error::Error, io::Write, ops::AddAssign};
 
-mod author;
 mod commit;
 mod filter;
 mod loc;
@@ -90,13 +88,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
-            commit_analyzer::usage(opts);
+            commit_analyzer::application::usage(opts);
             return Err(err.into());
         }
     };
     if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
     {
-        commit_analyzer::usage(opts);
+        commit_analyzer::application::usage(opts);
         return Ok(());
     }
     let is_verbose = matches.opt_present("verbose");
@@ -192,7 +190,7 @@ enum CommitParseError {
     CommitMissing,
     AuthorMissing,
     DateMissing,
-    AuthorFailed(author::AuthorParseError),
+    AuthorFailed(commit_analyzer::author::AuthorParseError),
     DateFailed(chrono::ParseError),
     LocSyntaxError,
     LocFailed(loc::LocParseError),
@@ -282,7 +280,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
     let commit = Commit {
         commit: commit.into(),
         merge,
-        author: Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
+        author: commit_analyzer::author::Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
         date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
             .map_err(CommitParseError::DateFailed)?,
         message: message.into(),
@@ -298,7 +296,7 @@ pub struct Commit {
     /// comment and the allow(dead_code) tag.
     #[allow(dead_code)]
     merge: Option<String>,
-    author: Author,
+    author: commit_analyzer::author::Author,
     date: chrono::DateTime<chrono::FixedOffset>,
     message: String,
     locs: Vec<LocDiff>,
