@@ -1,14 +1,3 @@
-/// An abbreviation for the filter checks.
-///
-/// This function checks whether the given `commit` matches the expectations
-/// defined in the given `filter`.
-pub fn matches_filter(commit: &crate::Commit, filter: &Filter) -> bool {
-    filter.check_author_name(commit.author.name())
-        && filter.check_author_email(commit.author.email())
-        && filter.check_commit(&commit.commit)
-        && filter.check_message(&commit.message)
-}
-
 #[derive(Debug, Default)]
 pub struct Filter {
     author_equals: Vec<String>,
@@ -67,7 +56,18 @@ impl Filter {
                 .any(|ext| loc.file().ends_with(&format!(".{}", ext)))
     }
 
-    pub fn new (matches: &getopts::Matches) -> Filter {
+    /// An abbreviation for the filter checks.
+    ///
+    /// This function checks whether the given `commit` matches the expectations
+    /// defined in the given `filter`.
+    pub fn matches(&self, commit: &crate::Commit) -> bool {
+        self.check_author_name(commit.author.name())
+            && self.check_author_email(commit.author.email())
+            && self.check_commit(&commit.commit)
+            && self.check_message(&commit.message)
+    }
+
+    pub fn new(matches: &getopts::Matches) -> Filter {
         Self {
             author_equals: matches.opt_strs("author-equals"),
             author_contains: matches.opt_strs("author-contains"),
