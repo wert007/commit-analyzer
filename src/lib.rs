@@ -98,45 +98,30 @@ pub mod author {
 /// This module defines the `Commit` data structure together with its utility
 /// enum `CommitParseError`.
 pub mod commit {
-    /// The set of errors which may occur.
-    #[derive(Debug)]
-    pub enum CommitParseError {
-        /// Parsing the author information was not possible.
-        AuthorFailed(crate::author::AuthorParseError),
-
-        /// There were no author information.
-        AuthorMissing,
-
-        /// There was no commit.
-        CommitMissing,
-
-        /// Parsing the date was not possible.
-        DateFailed(chrono::ParseError),
-
-        /// There was no date.
-        DateMissing,
-
-        /// Parsing the LOC diff was not possible.
-        LocFailed(crate::loc::LocParseError),
-
-        /// The LOC diff was malformatted.
-        LocSyntaxError,
-
-        /// Another reason.
-        Unknown,
-    }
-
+    /// The commit information.
     #[derive(Debug)]
     pub struct Commit {
+        /// The author information.
+        author: crate::author::Author,
+
+        /// The raw input data.
         commit: String,
+
+        /// The commit's date.
+        date: chrono::DateTime<chrono::FixedOffset>,
+
+        /// The LOC diff information.
+        locs: Vec<crate::loc::LocDiff>,
+
+        /// The merge information.
+        ///
         /// This field is currently unused, if this changes, you can delete this
-        /// comment and the allow(dead_code) tag.
+        /// `#[allow(dead_code)]` tag.
         #[allow(dead_code)]
         merge: Option<String>,
-        author: crate::author::Author,
-        date: chrono::DateTime<chrono::FixedOffset>,
+
+        /// The commit's description.
         message: String,
-        locs: Vec<crate::loc::LocDiff>,
     }
 
     impl Commit {
@@ -256,6 +241,34 @@ pub mod commit {
             };
             Ok((commit, remainder_result))
         }
+    }
+
+    /// The set of errors which may occur.
+    #[derive(Debug)]
+    pub enum CommitParseError {
+        /// Parsing the author information was not possible.
+        AuthorFailed(crate::author::AuthorParseError),
+
+        /// There were no author information.
+        AuthorMissing,
+
+        /// There was no commit.
+        CommitMissing,
+
+        /// Parsing the date was not possible.
+        DateFailed(chrono::ParseError),
+
+        /// There was no date.
+        DateMissing,
+
+        /// Parsing the LOC diff was not possible.
+        LocFailed(crate::loc::LocParseError),
+
+        /// The LOC diff was malformatted.
+        LocSyntaxError,
+
+        /// Another reason.
+        Unknown,
     }
 }
 
