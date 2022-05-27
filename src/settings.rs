@@ -12,7 +12,7 @@ pub mod application {
     /// This application's purpose.
     ///
     /// A brief summary what this application is supposed to do.
-    pub const DESCRIPTION: &str = "Parse the output of `git log`.";
+    pub const DESCRIPTION: &str = "Parses the Git history.";
 
     /// This application's name.
     pub const NAME: &str = "commit-analyzer";
@@ -22,7 +22,7 @@ pub mod application {
     /// In order to show a brief usage synopsis to the user, this global
     /// variable sets the information about the required and optional command
     /// line arguments.
-    pub const TOOL_TIP: &str = "<FILE> [OPTIONS]";
+    pub const TOOL_TIP: &str = "[OPTIONS]";
 }
 
 /// Version related settings.
