@@ -203,7 +203,7 @@ fn usage(options: &getopts::Options) {
         options.usage(&format!(
             "Usage: {} {}",
             settings::application::NAME,
-            settings::application::TOOL_TIP
+            settings::application::SYNOPSIS
         ))
     );
 }

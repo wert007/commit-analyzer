@@ -17,12 +17,12 @@ pub mod application {
     /// This application's name.
     pub const NAME: &str = "commit-analyzer";
 
-    /// This application's tool tip.
+    /// This application's usage synopsis.
     ///
     /// In order to show a brief usage synopsis to the user, this global
     /// variable sets the information about the required and optional command
     /// line arguments.
-    pub const TOOL_TIP: &str = "[OPTIONS]";
+    pub const SYNOPSIS: &str = "[OPTIONS]";
 }
 
 /// Version related settings.
