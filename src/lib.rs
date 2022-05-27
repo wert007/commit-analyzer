@@ -24,9 +24,9 @@ pub mod application {
     pub fn usage(options: &getopts::Options) {
         println!(
             "{NAME}, version {}.{}.{}. {DESCRIPTION}\n\n{}",
-            super::version::MAJOR,
-            super::version::MINOR,
-            super::version::FIX_LEVEL,
+            crate::version::MAJOR,
+            crate::version::MINOR,
+            crate::version::FIX_LEVEL,
             options.usage(&format!("Usage: {NAME} {SYNOPSIS}"))
         );
     }
@@ -90,6 +90,156 @@ pub mod author {
 
         /// Parsing the name was not possible.
         NameFailed,
+    }
+}
+
+/// The `Commit` struct and related utilities.
+///
+/// This module defines the `Commit` data structure together with its utility
+/// enum `CommitParseError`.
+pub mod commit {
+    #[derive(Debug)]
+    pub enum CommitParseError {
+        CommitMissing,
+        AuthorMissing,
+        DateMissing,
+        AuthorFailed(crate::author::AuthorParseError),
+        DateFailed(chrono::ParseError),
+        LocSyntaxError,
+        LocFailed(crate::loc::LocParseError),
+        Unknown,
+    }
+
+    #[derive(Debug)]
+    pub struct Commit {
+        commit: String,
+        /// This field is currently unused, if this changes, you can delete this
+        /// comment and the allow(dead_code) tag.
+        #[allow(dead_code)]
+        merge: Option<String>,
+        author: crate::author::Author,
+        date: chrono::DateTime<chrono::FixedOffset>,
+        message: String,
+        locs: Vec<crate::loc::LocDiff>,
+    }
+
+    impl Commit {
+        pub fn author(&self) -> &crate::author::Author {
+            &self.author
+        }
+
+        pub fn commit(&self) -> &str {
+            &self.commit
+        }
+
+        pub fn date(&self) -> &chrono::DateTime<chrono::FixedOffset> {
+            &self.date
+        }
+
+        pub fn loc(&self, filter: &crate::filter::Filter) -> i64 {
+            self.locs
+                .iter()
+                .filter(|l| filter.check_loc(l))
+                .map(|l| l.loc())
+                .sum()
+        }
+
+        pub fn message(&self) -> &str {
+            &self.message
+        }
+
+        pub fn new(commit: &str) -> Result<(Commit, &str), CommitParseError> {
+            let (commit, remainder) = commit
+                .strip_prefix("commit")
+                .ok_or(CommitParseError::CommitMissing)?
+                .split_once('\n')
+                .ok_or(CommitParseError::CommitMissing)?;
+            let commit = commit.trim();
+            let (merge, remainder) = if let Some(it) = remainder
+                .strip_prefix("Merge: ")
+                .map(|s| s.split_once('\n').ok_or(CommitParseError::Unknown))
+            {
+                let (merge, remainder) = it?;
+                (Some(merge.trim().to_owned()), remainder)
+            } else {
+                (None, remainder)
+            };
+            let (author, remainder) = remainder
+                .strip_prefix("Author: ")
+                .ok_or(CommitParseError::AuthorMissing)?
+                .split_once('\n')
+                .ok_or(CommitParseError::AuthorMissing)?;
+            let (date, mut remainder) = remainder
+                .strip_prefix("Date:   ")
+                .ok_or(CommitParseError::DateMissing)?
+                .split_once('\n')
+                .ok_or(CommitParseError::DateMissing)?;
+
+            let mut message = String::new();
+            let mut remainder_result = remainder;
+            if let Some(it) = remainder.strip_prefix('\n') {
+                remainder = it;
+            }
+            let mut space_count = 0;
+            let mut increase_space_count = true;
+            for (index, char) in remainder.char_indices() {
+                if increase_space_count {
+                    if char == ' ' {
+                        space_count += 1;
+                    } else {
+                        increase_space_count = false;
+                    }
+                } else if space_count == 4 && char == '\n' {
+                    increase_space_count = true;
+                    space_count = 0;
+                } else if space_count < 4 {
+                    break;
+                }
+                // This removes the char from remainder, before adding it to the
+                // message.
+                remainder_result = &remainder[index + char.len_utf8()..];
+                if !increase_space_count {
+                    message.push(char);
+                }
+            }
+            let message = message.trim();
+
+            let mut locs = vec![];
+            loop {
+                if remainder_result.is_empty() {
+                    break;
+                }
+                let (loc, remainder) = remainder_result
+                    .split_once('\n')
+                    .ok_or(CommitParseError::LocSyntaxError)?;
+                if loc.is_empty() {
+                    // We still need to consume the last line feed, otherwise the parser
+                    // will fail on the last commit.
+                    remainder_result = remainder;
+                    break;
+                } else if loc.starts_with("commit") {
+                    break;
+                }
+                locs.push(crate::loc::LocDiff::parse(loc).map_err(CommitParseError::LocFailed)?);
+                remainder_result = remainder;
+                if let Some(remainder) = remainder_result.strip_prefix('\n') {
+                    remainder_result = remainder;
+                    break;
+                }
+            }
+
+            let commit = Self {
+                commit: commit.into(),
+                merge,
+                author: crate::author::Author::new(author)
+                    .map_err(CommitParseError::AuthorFailed)?,
+                date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
+                    .map_err(CommitParseError::DateFailed)?,
+                message: message.into(),
+                locs,
+            };
+            Ok((commit, remainder_result))
+        }
     }
 }
 
@@ -166,7 +316,7 @@ pub mod filter {
         }
 
         /// Whether the LOC diff matches the expectations.
-        pub fn check_loc(&self, loc: &&super::loc::LocDiff) -> bool {
+        pub fn check_loc(&self, loc: &&crate::loc::LocDiff) -> bool {
             self.file_extension.is_empty()
                 || self
                     .file_extension
@@ -193,11 +343,11 @@ pub mod filter {
         ///
         /// This function checks whether the given `commit` matches the
         /// expectations defined in this `filter`.
-        pub fn matches(&self, commit: &super::commit::Commit) -> bool {
-            self.check_author_name(commit.author.name())
-                && self.check_author_email(commit.author.email())
-                && self.check_commit(&commit.commit)
-                && self.check_message(&commit.message)
+        pub fn matches(&self, commit: &crate::commit::Commit) -> bool {
+            self.check_author_name(commit.author().name())
+                && self.check_author_email(commit.author().email())
+                && self.check_commit(commit.commit())
+                && self.check_message(commit.message())
         }
 
         /// Create a new instance from a given set of filter creteria.
