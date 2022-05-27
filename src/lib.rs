@@ -124,19 +124,26 @@ pub mod commit {
         message: String,
     }
 
+    /// The methods and associated functions.
     impl Commit {
+        /// The getter method for the field `author` of the corresponding
+        /// struct.
         pub fn author(&self) -> &crate::author::Author {
             &self.author
         }
 
+        /// The getter method for the field `commit` of the corresponding
+        /// struct.
         pub fn commit(&self) -> &str {
             &self.commit
         }
 
+        /// The getter method for the field `date` of the corresponding struct.
         pub fn date(&self) -> &chrono::DateTime<chrono::FixedOffset> {
             &self.date
         }
 
+        /// The getter method for the field `loc` of the corresponding struct.
         pub fn loc(&self, filter: &crate::filter::Filter) -> i64 {
             self.locs
                 .iter()
@@ -145,10 +152,13 @@ pub mod commit {
                 .sum()
         }
 
+        /// The getter method for the field `message` of the corresponding
+        /// struct.
         pub fn message(&self) -> &str {
             &self.message
         }
 
+        /// Construct a new instance from the raw input data.
         pub fn new(commit: &str) -> Result<(Commit, &str), CommitParseError> {
             let (commit, remainder) = commit
                 .strip_prefix("commit")
