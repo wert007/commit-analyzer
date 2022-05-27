@@ -66,4 +66,19 @@ impl Filter {
                 .iter()
                 .any(|ext| loc.file().ends_with(&format!(".{}", ext)))
     }
+
+    pub fn new (matches: &getopts::Matches) -> Filter {
+        Self {
+            author_equals: matches.opt_strs("author-equals"),
+            author_contains: matches.opt_strs("author-contains"),
+            email_equals: matches.opt_strs("email-equals"),
+            email_contains: matches.opt_strs("email-contains"),
+            commit_equals: matches.opt_strs("commit-equals"),
+            commit_contains: matches.opt_strs("commit-contains"),
+            message_equals: matches.opt_strs("message-equals"),
+            message_contains: matches.opt_strs("message-contains"),
+            message_starts_with: matches.opt_strs("message-starts-with"),
+            file_extension: matches.opt_strs("file-extension"),
+        }
+    }
 }

@@ -139,18 +139,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let mut last_time = None;
     let mut duration = chrono::Duration::zero();
-    let filter = Filter {
-        author_equals: matches.opt_strs("author-equals"),
-        author_contains: matches.opt_strs("author-contains"),
-        email_equals: matches.opt_strs("email-equals"),
-        email_contains: matches.opt_strs("email-contains"),
-        commit_equals: matches.opt_strs("commit-equals"),
-        commit_contains: matches.opt_strs("commit-contains"),
-        message_equals: matches.opt_strs("message-equals"),
-        message_contains: matches.opt_strs("message-contains"),
-        message_starts_with: matches.opt_strs("message-starts-with"),
-        file_extension: matches.opt_strs("file-extension"),
-    };
+    let filter = Filter::new(&matches);
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
     let mut loc_per_day = HashMap::new();
