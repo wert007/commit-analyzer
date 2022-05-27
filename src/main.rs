@@ -5,6 +5,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let opts = opts
         .optflag("", "git", "Grab the input data from the local Git history.")
         .optflag("h", "help", "Show this help and exit.")
+        .optflag("", "stdin", "Read input data from `stdin`.")
         .optflag("v", "verbose", "Always show the entire output.")
         .optmulti(
             "a",
@@ -86,7 +87,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             return Err(err.into());
         }
     };
-    if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
+    if matches.opt_present("help")
+        || (!matches.opt_present("git")
+            && !matches.opt_present("input")
+            && !matches.opt_present("stdin"))
     {
         usage(opts);
         return Ok(());
@@ -106,12 +110,32 @@ fn main() -> Result<(), Box<dyn Error>> {
             .arg("log")
             .arg("--numstat")
             .output()?;
+
         String::from_utf8(process.stdout)?
     } else if matches.opt_present("input") {
         let path = matches.opt_str("input").unwrap();
+
         std::fs::read_to_string(path)?
+    } else if matches.opt_present("stdin") {
+        let mut input = String::new();
+        loop {
+            let mut buffer = String::new();
+            match std::io::stdin().read_line(&mut buffer) {
+                Ok(0) => {
+                    break;
+                }
+                Ok(_) => {
+                    input = input + &buffer;
+                }
+                Err(error) => {
+                    return Err(error.into());
+                }
+            }
+        }
+
+        input
     } else {
-        todo!("Read Git history from `stdin`.");
+        panic!("unknown input method");
     };
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
