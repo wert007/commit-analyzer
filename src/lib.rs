@@ -98,15 +98,31 @@ pub mod author {
 /// This module defines the `Commit` data structure together with its utility
 /// enum `CommitParseError`.
 pub mod commit {
+    /// The set of errors which may occur.
     #[derive(Debug)]
     pub enum CommitParseError {
-        CommitMissing,
-        AuthorMissing,
-        DateMissing,
+        /// Parsing the author information was not possible.
         AuthorFailed(crate::author::AuthorParseError),
+
+        /// There were no author information.
+        AuthorMissing,
+
+        /// There was no commit.
+        CommitMissing,
+
+        /// Parsing the date was not possible.
         DateFailed(chrono::ParseError),
-        LocSyntaxError,
+
+        /// There was no date.
+        DateMissing,
+
+        /// Parsing the LOC diff was not possible.
         LocFailed(crate::loc::LocParseError),
+
+        /// The LOC diff was malformatted.
+        LocSyntaxError,
+
+        /// Another reason.
         Unknown,
     }
 
