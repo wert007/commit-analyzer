@@ -280,7 +280,7 @@ fn parse_commit(commit: &str) -> Result<(Commit, &str), CommitParseError> {
     let commit = Commit {
         commit: commit.into(),
         merge,
-        author: commit_analyzer::author::Author::parse(author)
+        author: commit_analyzer::author::Author::new(author)
             .map_err(CommitParseError::AuthorFailed)?,
         date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
             .map_err(CommitParseError::DateFailed)?,

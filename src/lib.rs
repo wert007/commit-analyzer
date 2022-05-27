@@ -68,7 +68,7 @@ pub mod author {
         }
 
         /// Extract the author information from the given line.
-        pub fn parse(author: &str) -> Result<Author, AuthorParseError> {
+        pub fn new(author: &str) -> Result<Author, AuthorParseError> {
             let (name, remainder) = author.split_once('<').ok_or(AuthorParseError::NameFailed)?;
 
             Ok(Self {
