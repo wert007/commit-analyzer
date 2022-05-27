@@ -71,15 +71,13 @@ pub mod author {
         pub fn parse(author: &str) -> Result<Author, AuthorParseError> {
             let (name, remainder) = author.split_once('<').ok_or(AuthorParseError::NameFailed)?;
 
-            let email = remainder
-                .strip_suffix('>')
-                .ok_or(AuthorParseError::EmailFailed)?
-                .trim()
-                .into();
-
             Ok(Self {
                 name: name.trim().into(),
-                email,
+                email: remainder
+                    .strip_suffix('>')
+                    .ok_or(AuthorParseError::EmailFailed)?
+                    .trim()
+                    .into(),
             })
         }
     }
