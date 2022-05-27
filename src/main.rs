@@ -1,4 +1,5 @@
 use author::Author;
+use filter::Filter;
 use loc::LocDiff;
 use std::{collections::HashMap, error::Error, io::Write, ops::AddAssign};
 
@@ -154,7 +155,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut commits_per_day = HashMap::new();
     let mut loc_per_day = HashMap::new();
     for commit in parsed_commits.into_iter().rev() {
-        if matches_filter(&commit, &filter) {
+        if filter::matches_filter(&commit, &filter) {
             commit_count += 1;
             commits_per_day
                 .entry(commit.date.date())
