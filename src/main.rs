@@ -82,13 +82,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(err) => {
-            commit_analyzer::application::usage(opts);
+            commit_analyzer::usage(opts);
             return Err(err.into());
         }
     };
     if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
     {
-        commit_analyzer::application::usage(opts);
+        commit_analyzer::usage(opts);
         return Ok(());
     }
     let is_verbose = matches.opt_present("verbose");
