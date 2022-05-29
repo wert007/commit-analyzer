@@ -24,8 +24,8 @@ commit-analyzer --input git.log --output commits-and-loc-by-date.csv
 
 ## License
 
-This project's license is **MIT**.  The license can be found `LICENSE` in the
-main directory of this repository.
+This project's license is **MIT** and can be found in `LICENSE` in the main
+directory of this repository.
 
 ## Configured Options
 
