@@ -1,8 +1,8 @@
 //! The utility functions and data structures of this project.
 
-/// The author information.
+/// The author meta data.
 ///
-/// A valid author information consists of
+/// A valid author serialisation consists of
 ///
 /// * the specified name, and
 /// * the specified email address, wrapped in sharp brackets (`<>`).
@@ -191,16 +191,18 @@ impl Commit {
             }
         }
 
-        let commit = Self {
-            commit: commit.into(),
-            merge,
-            author: crate::Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
-            date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
-                .map_err(CommitParseError::DateFailed)?,
-            message: message.into(),
-            locs,
-        };
-        Ok((commit, remainder_result))
+        Ok((
+            Self {
+                commit: commit.into(),
+                merge,
+                author: crate::Author::parse(author).map_err(CommitParseError::AuthorFailed)?,
+                date: chrono::DateTime::parse_from_str(date, "%a %b %e %T %Y %z")
+                    .map_err(CommitParseError::DateFailed)?,
+                message: message.into(),
+                locs,
+            },
+            remainder_result,
+        ))
     }
 }
 
@@ -367,10 +369,10 @@ impl Filter {
 /// the utility enum `LocParseError` will occur.
 #[derive(Debug)]
 pub struct LocDiff {
-    /// The count of insertions.
+    /// The number of insertions.
     added: Option<u32>,
 
-    /// The count of deletions.
+    /// The number of deletions.
     removed: Option<u32>,
 
     /// The affected file.
@@ -401,21 +403,17 @@ impl LocDiff {
             .split_once('\t')
             .ok_or(LocParseError::SecondTabulatorMissing)?;
 
-        let added = if added == "-" {
-            None
-        } else {
-            Some(added.parse().map_err(LocParseError::AddedParseError)?)
-        };
-
-        let removed = if removed == "-" {
-            None
-        } else {
-            Some(removed.parse().map_err(LocParseError::RemovedParseError)?)
-        };
-
         Ok(Self {
-            added,
-            removed,
+            added: if added == "-" {
+                None
+            } else {
+                Some(added.parse().map_err(LocParseError::AddedParseError)?)
+            },
+            removed: if removed == "-" {
+                None
+            } else {
+                Some(removed.parse().map_err(LocParseError::RemovedParseError)?)
+            },
             file: String::from(file),
         })
     }
@@ -424,17 +422,17 @@ impl LocDiff {
 /// The set of errors which may occur.
 #[derive(Debug)]
 pub enum LocParseError {
-    /// The tab character between the insertions and deletions is missing.
-    FirstTabulatorMissing,
-
-    /// The tab character between the deletions and file name is missing.
-    SecondTabulatorMissing,
-
     /// The number of insertions could not be parsed correctly.
     AddedParseError(std::num::ParseIntError),
 
+    /// The tab character between the insertions and deletions is missing.
+    FirstTabulatorMissing,
+
     /// The number of deletions could not be parsed correctly.
     RemovedParseError(std::num::ParseIntError),
+
+    /// The tab character between the deletions and file name is missing.
+    SecondTabulatorMissing,
 }
 
 /// A brief in-app documentation.

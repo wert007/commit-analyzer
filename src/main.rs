@@ -128,7 +128,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    let mut last_time: std::option::Option<chrono::DateTime<chrono::FixedOffset>> = None;
+    let mut last_time = None;
     let mut duration = chrono::Duration::zero();
     let filter = commit_analyzer::Filter::new(&matches);
     let mut commit_count = 0;
