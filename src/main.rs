@@ -116,7 +116,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];
     while !commits.is_empty() {
-        let result = commit_analyzer::commit::Commit::new(commits);
+        let result = commit_analyzer::Commit::parse(commits);
         match result {
             Ok((commit, remainder)) => {
                 commits = remainder;
@@ -130,7 +130,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     let mut last_time: std::option::Option<chrono::DateTime<chrono::FixedOffset>> = None;
     let mut duration = chrono::Duration::zero();
-    let filter = commit_analyzer::filter::Filter::new(&matches);
+    let filter = commit_analyzer::Filter::new(&matches);
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
     let mut loc_per_day = HashMap::new();
