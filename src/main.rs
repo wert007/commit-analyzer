@@ -81,8 +81,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
+        Err(getopts::Fail::UnrecognizedOption(string)) => {
+            println!(
+                "{}",
+                opts.usage(&format!(
+                    "Unknown option '{string}'! Please rerun with one of these:"
+                ))
+            );
+            // Quit the application with `EX_USAGE` from `sysexits.h`.
+            std::process::exit(64i32);
+        }
         Err(err) => {
-            commit_analyzer::usage(opts);
             return Err(err.into());
         }
     };
