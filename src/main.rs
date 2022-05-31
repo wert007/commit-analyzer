@@ -85,11 +85,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!(
                 "{}",
                 opts.usage(&format!(
-                    "Unknown option '{string}'! Please rerun with one of these:"
+                    "Unknown option '{string}'! Please rerun with some of these:"
+                    // "Unknown option '{string}'. The configured options are as follows:"
+                    // "Unresolvable argument: '{string}'. Valid options are as follows:"
                 ))
             );
             // Quit the application with `EX_USAGE` from `sysexits.h`.
-            std::process::exit(64i32);
+            std::process::exit(64);
         }
         Err(err) => {
             return Err(err.into());
