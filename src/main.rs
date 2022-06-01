@@ -1,6 +1,6 @@
-use std::{collections::HashMap, error::Error, io::Write, ops::AddAssign};
+use std::{collections::HashMap, io::Write, ops::AddAssign};
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> sysexits::ExitCode {
     let mut opts = getopts::Options::new();
     let opts = opts
         .optflag("", "git", "Grab the input data from the local Git history.")
@@ -81,35 +81,49 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
+        Err(getopts::Fail::UnrecognizedOption(string)) => {
+            eprintln!("{}", opts.usage(&format!("Unknown option '{string}'.")));
+            return sysexits::ExitCode::Usage;
+        }
         Err(err) => {
-            commit_analyzer::usage(opts);
-            return Err(err.into());
+            eprintln!("{}", opts.usage(&format!("{err}")));
+            return sysexits::ExitCode::Config;
         }
     };
     if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
     {
         commit_analyzer::usage(opts);
-        return Ok(());
+        return sysexits::ExitCode::Ok;
     }
     let is_verbose = matches.opt_present("verbose");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
-        Some(Err(err)) => {
+        Some(Err(_)) => {
             eprintln!("duration must be an integer value!");
-            return Err(err.into());
+            return sysexits::ExitCode::Usage;
         }
     };
     let path = matches.opt_str("output");
     let commits = if matches.opt_present("git") {
-        let process = std::process::Command::new("git")
+        let process = match std::process::Command::new("git")
             .arg("log")
             .arg("--numstat")
-            .output()?;
-        String::from_utf8(process.stdout)?
+            .output()
+        {
+            Ok(out) => out,
+            Err(_) => return sysexits::ExitCode::Unavailable,
+        };
+        match String::from_utf8(process.stdout) {
+            Ok(string) => string,
+            Err(_) => return sysexits::ExitCode::DataErr,
+        }
     } else if matches.opt_present("input") {
         let path = matches.opt_str("input").unwrap();
-        std::fs::read_to_string(path)?
+        match std::fs::read_to_string(path) {
+            Ok(string) => string,
+            Err(_) => return sysexits::ExitCode::IoErr,
+        }
     } else {
         todo!("Read Git history from `stdin`.");
     };
@@ -162,7 +176,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Found {} commits overall", commit_count);
 
     if let Some(path) = path {
-        let mut file = std::fs::File::create(path)?;
+        let mut file = match std::fs::File::create(path) {
+            Ok(file) => file,
+            Err(_) => return sysexits::ExitCode::CantCreat,
+        };
         let mut sorted_per_day_data = vec![];
         for key in commits_per_day.keys() {
             let commit_count = commits_per_day[key];
@@ -170,11 +187,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             sorted_per_day_data.push((*key, commit_count, loc));
         }
         sorted_per_day_data.sort_by_cached_key(|(k, _, _)| *k);
-        writeln!(file, "Date, Commits, Loc")?;
+        match writeln!(file, "Date, Commits, Loc") {
+            Ok(something) => something,
+            Err(_) => return sysexits::ExitCode::IoErr,
+        };
         for (date, commits, loc) in sorted_per_day_data {
-            writeln!(file, "{}, {}, {}", date, commits, loc)?;
+            match writeln!(file, "{}, {}, {}", date, commits, loc) {
+                Ok(something) => something,
+                Err(_) => return sysexits::ExitCode::IoErr,
+            };
         }
     }
 
-    Ok(())
+    sysexits::ExitCode::Ok
 }
