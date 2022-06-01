@@ -82,14 +82,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
         Err(getopts::Fail::UnrecognizedOption(string)) => {
-            println!(
-                "{}",
-                opts.usage(&format!(
-                    "Unknown option '{string}'! Please rerun with some of these:"
-                    // "Unknown option '{string}'. The configured options are as follows:"
-                    // "Unresolvable argument: '{string}'. Valid options are as follows:"
-                ))
-            );
+            eprintln!("{}", opts.usage(&format!("Unknown option '{string}'.")));
             // Quit the application with `EX_USAGE` from `sysexits.h`.
             std::process::exit(64);
         }
