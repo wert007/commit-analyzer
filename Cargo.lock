@@ -27,6 +27,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "getopts",
+ "sysexits",
 ]
 
 [[package]]
@@ -62,6 +63,12 @@ checksum = "9a64b1ec5cda2586e284722486d802acf1f7dbdc623e2bfc57e65ca1cd099290"
 dependencies = [
  "autocfg",
 ]
+
+[[package]]
+name = "sysexits"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d5f3c147073b163781e173405eb888683bf1c2d2f8604396a0727bf7fddb4e8"
 
 [[package]]
 name = "time"
