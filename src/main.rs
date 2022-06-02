@@ -1,6 +1,6 @@
-use std::{collections::HashMap, error::Error, io::Write, ops::AddAssign};
+use std::{collections::HashMap, io::Write, ops::AddAssign};
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> sysexits::ExitCode {
     let mut opts = getopts::Options::new();
     let opts = opts
         .optflag("", "git", "Grab the input data from the local Git history.")
@@ -82,9 +82,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
-        Err(err) => {
+        Err(_) => {
             commit_analyzer::usage(opts);
-            return Err(err.into());
+            return sysexits::ExitCode::Usage;
         }
     };
     if matches.opt_present("help")
@@ -93,40 +93,53 @@ fn main() -> Result<(), Box<dyn Error>> {
             && !matches.opt_present("stdin"))
     {
         commit_analyzer::usage(opts);
-        return Ok(());
+        return sysexits::ExitCode::Ok;
     }
     let is_verbose = matches.opt_present("verbose");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
-        Some(Err(err)) => {
+        Some(Err(_)) => {
             eprintln!("duration must be an integer value!");
-            return Err(err.into());
+            return sysexits::ExitCode::Usage;
         }
     };
     let path = matches.opt_str("output");
     let commits = if matches.opt_present("git") {
-        let process = std::process::Command::new("git")
+        let process = match std::process::Command::new("git")
             .arg("log")
             .arg("--numstat")
-            .output()?;
+            .output()
+        {
+            Ok(out) => out,
+            Err(_) => return sysexits::ExitCode::Unavailable,
+        };
 
-        String::from_utf8(process.stdout)?
+        match String::from_utf8(process.stdout) {
+            Ok(string) => string,
+            Err(_) => return sysexits::ExitCode::DataErr,
+        }
     } else if matches.opt_present("input") {
         let path = matches.opt_str("input").unwrap();
 
-        std::fs::read_to_string(path)?
+        match std::fs::read_to_string(path) {
+            Ok(string) => string,
+            Err(_) => return sysexits::ExitCode::IoErr,
+        }
     } else if matches.opt_present("stdin") {
         let mut input = String::new();
         loop {
             let mut buffer = String::new();
-            match std::io::stdin().read_line(&mut buffer)? {
-                0 => {
-                    break;
-                }
-                _ => {
-                    input.push_str(&buffer);
-                }
+            match std::io::stdin().read_line(&mut buffer) {
+                Ok(integer) => match integer {
+                    0 => {
+                        break;
+                    }
+                    _ => {
+                        input.push_str(&buffer);
+                    }
+                },
+                Err(_) => return sysexits::ExitCode::IoErr,
             }
         }
 
@@ -183,7 +196,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Found {} commits overall", commit_count);
 
     if let Some(path) = path {
-        let mut file = std::fs::File::create(path)?;
+        let mut file = match std::fs::File::create(path) {
+            Ok(something) => something,
+            Err(_) => return sysexits::ExitCode::CantCreat,
+        };
         let mut sorted_per_day_data = vec![];
         for key in commits_per_day.keys() {
             let commit_count = commits_per_day[key];
@@ -191,11 +207,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             sorted_per_day_data.push((*key, commit_count, loc));
         }
         sorted_per_day_data.sort_by_cached_key(|(k, _, _)| *k);
-        writeln!(file, "Date, Commits, Loc")?;
+        match writeln!(file, "Date, Commits, Loc") {
+            Ok(something) => something,
+            Err(_) => return sysexits::ExitCode::IoErr,
+        };
         for (date, commits, loc) in sorted_per_day_data {
-            writeln!(file, "{}, {}, {}", date, commits, loc)?;
+            match writeln!(file, "{}, {}, {}", date, commits, loc) {
+                Ok(something) => something,
+                Err(_) => return sysexits::ExitCode::IoErr,
+            };
         }
     }
 
-    Ok(())
+    sysexits::ExitCode::Ok
 }
