@@ -82,9 +82,13 @@ fn main() -> sysexits::ExitCode {
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
-        Err(_) => {
-            commit_analyzer::usage(opts);
+        Err(getopts::Fail::UnrecognizedOption(string)) => {
+            eprintln!("{}", opts.usage(&format!("Unknown option '{string}'.")));
             return sysexits::ExitCode::Usage;
+        }
+        Err(err) => {
+            eprintln!("{}", opts.usage(&format!("{err}")));
+            return sysexits::ExitCode::Config;
         }
     };
     if matches.opt_present("help")
@@ -114,14 +118,12 @@ fn main() -> sysexits::ExitCode {
             Ok(out) => out,
             Err(_) => return sysexits::ExitCode::Unavailable,
         };
-
         match String::from_utf8(process.stdout) {
             Ok(string) => string,
             Err(_) => return sysexits::ExitCode::DataErr,
         }
     } else if matches.opt_present("input") {
         let path = matches.opt_str("input").unwrap();
-
         match std::fs::read_to_string(path) {
             Ok(string) => string,
             Err(_) => return sysexits::ExitCode::IoErr,
@@ -197,7 +199,7 @@ fn main() -> sysexits::ExitCode {
 
     if let Some(path) = path {
         let mut file = match std::fs::File::create(path) {
-            Ok(something) => something,
+            Ok(file) => file,
             Err(_) => return sysexits::ExitCode::CantCreat,
         };
         let mut sorted_per_day_data = vec![];
