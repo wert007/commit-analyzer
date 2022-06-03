@@ -82,6 +82,15 @@ fn main() -> sysexits::ExitCode {
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
+        Err(getopts::Fail::ArgumentMissing(string)) => {
+            eprintln!(
+                "{}",
+                opts.usage(&format!(
+                    "There was an argument expected for option '{string}'."
+                ))
+            );
+            return sysexits::ExitCode::Usage;
+        }
         Err(getopts::Fail::UnrecognizedOption(string)) => {
             eprintln!("{}", opts.usage(&format!("Unknown option '{string}'.")));
             return sysexits::ExitCode::Usage;
