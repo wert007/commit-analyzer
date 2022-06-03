@@ -100,12 +100,12 @@ fn main() -> sysexits::ExitCode {
             return sysexits::ExitCode::Config;
         }
     };
+    let input = commit_analyzer::InputMethod::new(&matches);
     if matches.opt_present("help") {
         commit_analyzer::usage(opts);
         return sysexits::ExitCode::Ok;
     }
-    if !matches.opt_present("git") && !matches.opt_present("input") && !matches.opt_present("stdin")
-    {
+    if !input.specified() {
         eprintln!("{}", opts.usage("Please specify the input method."));
         return sysexits::ExitCode::Usage;
     }
@@ -119,45 +119,26 @@ fn main() -> sysexits::ExitCode {
         }
     };
     let path = matches.opt_str("output");
-    let commits = if matches.opt_present("git") {
-        let process = match std::process::Command::new("git")
-            .arg("log")
-            .arg("--numstat")
-            .output()
-        {
-            Ok(out) => out,
-            Err(_) => return sysexits::ExitCode::Unavailable,
-        };
-        match String::from_utf8(process.stdout) {
-            Ok(string) => string,
-            Err(_) => return sysexits::ExitCode::DataErr,
-        }
-    } else if matches.opt_present("input") {
-        let path = matches.opt_str("input").unwrap();
-        match std::fs::read_to_string(path) {
-            Ok(string) => string,
-            Err(_) => return sysexits::ExitCode::IoErr,
-        }
-    } else if matches.opt_present("stdin") {
-        let mut input = String::new();
-        loop {
-            let mut buffer = String::new();
-            match std::io::stdin().read_line(&mut buffer) {
-                Ok(integer) => match integer {
-                    0 => {
-                        break;
-                    }
-                    _ => {
-                        input.push_str(&buffer);
-                    }
-                },
-                Err(_) => return sysexits::ExitCode::IoErr,
+    let commits = match input.read() {
+        Some(string) => string,
+        None => match input {
+            commit_analyzer::InputMethod::GitHistory => {
+                eprintln!("Reading from the Git history was not possible.");
+                return sysexits::ExitCode::Unavailable;
             }
-        }
-
-        input
-    } else {
-        panic!("unknown input method");
+            commit_analyzer::InputMethod::LogFile(string) => {
+                eprintln!("The input file '{string}' could not be read.");
+                return sysexits::ExitCode::NoInput;
+            }
+            commit_analyzer::InputMethod::None => {
+                eprintln!("The input method is invalid.");
+                return sysexits::ExitCode::Usage;
+            }
+            commit_analyzer::InputMethod::Stdin => {
+                eprintln!("Reading from `stdin` failed.");
+                return sysexits::ExitCode::IoErr;
+            }
+        },
     };
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];

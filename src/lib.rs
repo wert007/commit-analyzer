@@ -352,6 +352,86 @@ impl Filter {
     }
 }
 
+/// The possible input methods.
+pub enum InputMethod {
+    /// Read the input from the local Git history.
+    GitHistory,
+
+    /// Read the specified input file.
+    LogFile(String),
+
+    /// There was no input method specified.
+    None,
+
+    /// Read from `stdin`.
+    Stdin,
+}
+
+impl InputMethod {
+    /// Create a new instance from the given command line options.
+    pub fn new(matches: &getopts::Matches) -> Self {
+        if matches.opt_present("git") {
+            Self::GitHistory
+        } else if matches.opt_present("input") {
+            Self::LogFile(matches.opt_str("input").unwrap())
+        } else if matches.opt_present("stdin") {
+            Self::Stdin
+        } else {
+            Self::None
+        }
+    }
+
+    /// Process the configured input method.
+    pub fn read(&self) -> Option<String> {
+        match self {
+            Self::GitHistory => {
+                let process = match std::process::Command::new("git")
+                    .arg("log")
+                    .arg("--numstat")
+                    .output()
+                {
+                    Ok(out) => out,
+                    Err(_) => return None,
+                };
+
+                match String::from_utf8(process.stdout) {
+                    Ok(string) => Some(string),
+                    Err(_) => None,
+                }
+            }
+            Self::LogFile(string) => match std::fs::read_to_string(string) {
+                Ok(string) => Some(string),
+                Err(_) => None,
+            },
+            Self::None => None,
+            Self::Stdin => {
+                let mut input = String::new();
+                loop {
+                    let mut buffer = String::new();
+                    match std::io::stdin().read_line(&mut buffer) {
+                        Ok(integer) => match integer {
+                            0 => {
+                                break;
+                            }
+                            _ => {
+                                input.push_str(&buffer);
+                            }
+                        },
+                        Err(_) => return None,
+                    }
+                }
+
+                Some(input)
+            }
+        }
+    }
+
+    /// Check whether an input method was specified at all.
+    pub fn specified(&self) -> bool {
+        !matches!(self, Self::None)
+    }
+}
+
 /// The LOC diff a certain commit introduces.
 ///
 /// LOC is the abbreviation for the number of **l**ines **o**f **c**ode a
