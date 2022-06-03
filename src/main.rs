@@ -91,13 +91,14 @@ fn main() -> sysexits::ExitCode {
             return sysexits::ExitCode::Config;
         }
     };
-    if matches.opt_present("help")
-        || (!matches.opt_present("git")
-            && !matches.opt_present("input")
-            && !matches.opt_present("stdin"))
-    {
+    if matches.opt_present("help") {
         commit_analyzer::usage(opts);
         return sysexits::ExitCode::Ok;
+    }
+    if !matches.opt_present("git") && !matches.opt_present("input") && !matches.opt_present("stdin")
+    {
+        eprintln!("{}", opts.usage("Please specify the input method."));
+        return sysexits::ExitCode::Usage;
     }
     let is_verbose = matches.opt_present("verbose");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
