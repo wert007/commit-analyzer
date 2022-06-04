@@ -360,24 +360,21 @@ pub enum InputMethod {
     /// Read the specified input file.
     LogFile(String),
 
-    /// There was no input method specified.
-    None,
-
     /// Read from `stdin`.
     Stdin,
 }
 
 impl InputMethod {
     /// Create a new instance from the given command line options.
-    pub fn new(matches: &getopts::Matches) -> Self {
+    pub fn parse(matches: &getopts::Matches) -> Option<Self> {
         if matches.opt_present("git") {
-            Self::GitHistory
+            Some(Self::GitHistory)
         } else if matches.opt_present("input") {
-            Self::LogFile(matches.opt_str("input").unwrap())
+            Some(Self::LogFile(matches.opt_str("input").unwrap()))
         } else if matches.opt_present("stdin") {
-            Self::Stdin
+            Some(Self::Stdin)
         } else {
-            Self::None
+            None
         }
     }
 
@@ -403,7 +400,6 @@ impl InputMethod {
                 Ok(string) => Some(string),
                 Err(_) => None,
             },
-            Self::None => None,
             Self::Stdin => {
                 let mut input = String::new();
                 loop {
@@ -424,11 +420,6 @@ impl InputMethod {
                 Some(input)
             }
         }
-    }
-
-    /// Check whether an input method was specified at all.
-    pub fn specified(&self) -> bool {
-        !matches!(self, Self::None)
     }
 }
 

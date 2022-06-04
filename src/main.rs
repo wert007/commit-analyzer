@@ -100,21 +100,23 @@ fn main() -> sysexits::ExitCode {
             return sysexits::ExitCode::Config;
         }
     };
-    let input = commit_analyzer::InputMethod::new(&matches);
+    let input = match commit_analyzer::InputMethod::parse(&matches) {
+        Some(input) => input,
+        None => {
+            eprintln!("{}", opts.usage("Please specify the input method."));
+            return sysexits::ExitCode::Usage;
+        }
+    };
     if matches.opt_present("help") {
         commit_analyzer::usage(opts);
         return sysexits::ExitCode::Ok;
-    }
-    if !input.specified() {
-        eprintln!("{}", opts.usage("Please specify the input method."));
-        return sysexits::ExitCode::Usage;
     }
     let is_verbose = matches.opt_present("verbose");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
         Some(Ok(it)) => it,
         Some(Err(_)) => {
-            eprintln!("duration must be an integer value!");
+            eprintln!("Duration must be an integer value!");
             return sysexits::ExitCode::Usage;
         }
     };
@@ -129,10 +131,6 @@ fn main() -> sysexits::ExitCode {
             commit_analyzer::InputMethod::LogFile(string) => {
                 eprintln!("The input file '{string}' could not be read.");
                 return sysexits::ExitCode::NoInput;
-            }
-            commit_analyzer::InputMethod::None => {
-                eprintln!("The input method is invalid.");
-                return sysexits::ExitCode::Usage;
             }
             commit_analyzer::InputMethod::Stdin => {
                 eprintln!("Reading from `stdin` failed.");

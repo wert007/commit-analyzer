@@ -5,8 +5,8 @@
 This is a simple tool which grabs the output of `git log --numstat` and analyzes
 how much time somebody worked on the project.
 
-For instance, simply call the one of the following lines to see all commits that
-fit the criteria and how much time was spend creating them.
+For instance, simply call one of the following lines to see all commits that fit
+the criteria and how much time was spend creating them.
 
 ```
 commit-analyzer --git --author-equals wert007
