@@ -103,7 +103,7 @@ fn main() -> sysexits::ExitCode {
     let input = match commit_analyzer::InputMethod::parse(&matches) {
         Some(input) => input,
         None => {
-            eprintln!("{}", opts.usage("Please specify the input method."));
+            eprintln!("{}", opts.usage("Please specify one input method."));
             return sysexits::ExitCode::Usage;
         }
     };
