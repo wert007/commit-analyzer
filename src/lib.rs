@@ -367,27 +367,31 @@ pub enum InputMethod {
 impl InputMethod {
     /// Create a new instance from the given command line options.
     pub fn parse(matches: &getopts::Matches) -> Option<Self> {
+        let git = 1;
+        let input = 2;
+        let stdin = 4;
+
         let mut method = 0;
 
         if matches.opt_present("git") {
-            method |= 1
+            method |= git
         }
 
         if matches.opt_present("input") {
-            method |= 2
+            method |= input
         }
 
         if matches.opt_present("stdin") {
-            method |= 4
+            method |= stdin
         }
 
         let method = method;
 
-        if method == 1 {
+        if method == git {
             Some(Self::GitHistory)
-        } else if method == 2 {
+        } else if method == input {
             Some(Self::LogFile(matches.opt_str("input").unwrap()))
-        } else if method == 4 {
+        } else if method == stdin {
             Some(Self::Stdin)
         } else {
             None
