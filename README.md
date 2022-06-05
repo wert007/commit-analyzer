@@ -51,3 +51,25 @@ directory of this repository.
 
 Options marked with **OR** in their explanation can be specified multiple times
 and will be evaluated by joining them using the logical OR (`||`).
+
+## Installation and Updating
+
+Installation is very easy with Cargo. Just execute the following line in a
+terminal:
+
+```
+cargo install --git https://github.com/wert007/commit-analyzer
+```
+
+This command will install a release compilation of the latest version locally to
+your user account.
+
+In order to install the latest updates, rerun with `--force`:
+
+```
+cargo install --force --git https://github.com/wert007/commit-analyzer
+```
+
+Cargo will then replace the currently installed release binary with a newly
+compiled one from the latest repository state using the configured release
+profile.
