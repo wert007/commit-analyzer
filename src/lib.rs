@@ -338,15 +338,15 @@ impl Filter {
     /// Create a new instance from a given set of filter creteria.
     pub fn new(matches: &getopts::Matches) -> Self {
         Self {
-            author_equals: matches.opt_strs("author-equals"),
             author_contains: matches.opt_strs("author-contains"),
-            commit_equals: matches.opt_strs("commit-equals"),
+            author_equals: matches.opt_strs("author-equals"),
             commit_contains: matches.opt_strs("commit-contains"),
-            email_equals: matches.opt_strs("email-equals"),
+            commit_equals: matches.opt_strs("commit-equals"),
             email_contains: matches.opt_strs("email-contains"),
+            email_equals: matches.opt_strs("email-equals"),
             file_extension: matches.opt_strs("file-extension"),
-            message_equals: matches.opt_strs("message-equals"),
             message_contains: matches.opt_strs("message-contains"),
+            message_equals: matches.opt_strs("message-equals"),
             message_starts_with: matches.opt_strs("message-starts-with"),
         }
     }
@@ -366,35 +366,46 @@ pub enum InputMethod {
 
 impl InputMethod {
     /// Create a new instance from the given command line options.
+    ///
+    /// For each application call, there is only one input method specification
+    /// allowed. In case that multiple methods should be given by the
+    /// corresponding command line options, the application will quit with an
+    /// according error message and exit code since it is not clear which method
+    /// shall be preferred in case of different input per method.
+    ///
+    /// The check itself is performed as follows:
+    ///
+    /// * Each input method is associated with a certain bit.
+    /// * If an input method is requested, its bit will be set.
+    /// * If the resulting integer is equal to two to the power of a natural
+    ///   number or zero, the corresponding input method will be configured;
+    ///   else, the operation is invalid.
     pub fn parse(matches: &getopts::Matches) -> Option<Self> {
-        let git = 1;
-        let input = 2;
-        let stdin = 4;
+        const GIT: i32 = 1;
+        const INPUT: i32 = 2;
+        const STDIN: i32 = 4;
 
         let mut method = 0;
 
         if matches.opt_present("git") {
-            method |= git
+            method |= GIT
         }
 
         if matches.opt_present("input") {
-            method |= input
+            method |= INPUT
         }
 
         if matches.opt_present("stdin") {
-            method |= stdin
+            method |= STDIN
         }
 
         let method = method;
 
-        if method == git {
-            Some(Self::GitHistory)
-        } else if method == input {
-            Some(Self::LogFile(matches.opt_str("input").unwrap()))
-        } else if method == stdin {
-            Some(Self::Stdin)
-        } else {
-            None
+        match method {
+            GIT => Some(Self::GitHistory),
+            INPUT => Some(Self::LogFile(matches.opt_str("input").unwrap())),
+            STDIN => Some(Self::Stdin),
+            _ => None,
         }
     }
 
@@ -422,6 +433,7 @@ impl InputMethod {
             },
             Self::Stdin => {
                 let mut input = String::new();
+
                 loop {
                     let mut buffer = String::new();
                     match std::io::stdin().read_line(&mut buffer) {
