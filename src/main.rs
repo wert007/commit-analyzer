@@ -112,11 +112,11 @@ fn main() -> sysexits::ExitCode {
         }
     };
     let is_verbose = matches.opt_present("verbose");
-    let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
+    let max_diff_hours = match matches.opt_str("duration").map(|str| str.parse::<u32>()) {
         None => 3,
         Some(Ok(it)) => it,
-        Some(Err(_)) => {
-            eprintln!("Duration must be an integer value!");
+        Some(Err(error)) => {
+            eprintln!("Invalid duration: {error}!");
             return sysexits::ExitCode::Usage;
         }
     };
