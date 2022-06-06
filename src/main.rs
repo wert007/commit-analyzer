@@ -100,6 +100,10 @@ fn main() -> sysexits::ExitCode {
             return sysexits::ExitCode::Config;
         }
     };
+    if matches.opt_present("help") {
+        commit_analyzer::usage(opts);
+        return sysexits::ExitCode::Ok;
+    }
     let input = match commit_analyzer::InputMethod::parse(&matches) {
         Some(input) => input,
         None => {
@@ -107,10 +111,6 @@ fn main() -> sysexits::ExitCode {
             return sysexits::ExitCode::Usage;
         }
     };
-    if matches.opt_present("help") {
-        commit_analyzer::usage(opts);
-        return sysexits::ExitCode::Ok;
-    }
     let is_verbose = matches.opt_present("verbose");
     let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
         None => 3,
