@@ -122,8 +122,8 @@ fn main() -> sysexits::ExitCode {
     };
     let path = matches.opt_str("output");
     let commits = match input.read() {
-        Some(string) => string,
-        None => match input {
+        Ok(string) => string,
+        Err(_) => match input {
             commit_analyzer::InputMethod::GitHistory => {
                 eprintln!("Reading from the Git history was not possible.");
                 return sysexits::ExitCode::Unavailable;

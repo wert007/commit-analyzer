@@ -399,8 +399,6 @@ impl InputMethod {
             method |= STDIN
         }
 
-        let method = method;
-
         match method {
             GIT => Some(Self::GitHistory),
             INPUT => Some(Self::LogFile(matches.opt_str("input").unwrap())),
@@ -410,46 +408,31 @@ impl InputMethod {
     }
 
     /// Process the configured input method.
-    pub fn read(&self) -> Option<String> {
+    pub fn read(&self) -> Result<String, Box<dyn std::error::Error>> {
         match self {
             Self::GitHistory => {
-                let process = match std::process::Command::new("git")
+                let process = std::process::Command::new("git")
                     .arg("log")
                     .arg("--numstat")
-                    .output()
-                {
-                    Ok(out) => out,
-                    Err(_) => return None,
-                };
+                    .output()?;
 
-                match String::from_utf8(process.stdout) {
-                    Ok(string) => Some(string),
-                    Err(_) => None,
-                }
+                Ok(String::from_utf8(process.stdout)?)
             }
-            Self::LogFile(string) => match std::fs::read_to_string(string) {
-                Ok(string) => Some(string),
-                Err(_) => None,
-            },
+            Self::LogFile(string) => Ok(std::fs::read_to_string(string)?),
             Self::Stdin => {
                 let mut input = String::new();
 
                 loop {
                     let mut buffer = String::new();
-                    match std::io::stdin().read_line(&mut buffer) {
-                        Ok(integer) => match integer {
-                            0 => {
-                                break;
-                            }
-                            _ => {
-                                input.push_str(&buffer);
-                            }
-                        },
-                        Err(_) => return None,
+
+                    if std::io::stdin().read_line(&mut buffer)? == 0 {
+                        break;
                     }
+
+                    input.push_str(&buffer);
                 }
 
-                Some(input)
+                Ok(input)
             }
         }
     }
