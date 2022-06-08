@@ -5,6 +5,7 @@ fn main() -> sysexits::ExitCode {
     let opts = opts
         .optflag("", "git", "Grab the input data from the local Git history.")
         .optflag("h", "help", "Show this help and exit.")
+        .optflag("", "stdin", "Read input data from `stdin`.")
         .optflag("v", "verbose", "Always show the entire output.")
         .optmulti(
             "a",
@@ -81,6 +82,15 @@ fn main() -> sysexits::ExitCode {
         );
     let matches = match opts.parse(std::env::args()) {
         Ok(it) => it,
+        Err(getopts::Fail::ArgumentMissing(string)) => {
+            eprintln!(
+                "{}",
+                opts.usage(&format!(
+                    "There was an argument expected for option '{string}'."
+                ))
+            );
+            return sysexits::ExitCode::Usage;
+        }
         Err(getopts::Fail::UnrecognizedOption(string)) => {
             eprintln!("{}", opts.usage(&format!("Unknown option '{string}'.")));
             return sysexits::ExitCode::Usage;
@@ -90,42 +100,43 @@ fn main() -> sysexits::ExitCode {
             return sysexits::ExitCode::Config;
         }
     };
-    if matches.opt_present("help") || (!matches.opt_present("git") && !matches.opt_present("input"))
-    {
+    if matches.opt_present("help") {
         commit_analyzer::usage(opts);
         return sysexits::ExitCode::Ok;
     }
+    let input = match commit_analyzer::InputMethod::parse(&matches) {
+        Some(input) => input,
+        None => {
+            eprintln!("{}", opts.usage("Please specify one input method."));
+            return sysexits::ExitCode::Usage;
+        }
+    };
     let is_verbose = matches.opt_present("verbose");
-    let max_diff_hours: u32 = match matches.opt_str("duration").map(|str| str.parse()) {
+    let max_diff_hours = match matches.opt_str("duration").map(|str| str.parse::<u32>()) {
         None => 3,
         Some(Ok(it)) => it,
-        Some(Err(_)) => {
-            eprintln!("duration must be an integer value!");
+        Some(Err(error)) => {
+            eprintln!("Invalid duration: {error}!");
             return sysexits::ExitCode::Usage;
         }
     };
     let path = matches.opt_str("output");
-    let commits = if matches.opt_present("git") {
-        let process = match std::process::Command::new("git")
-            .arg("log")
-            .arg("--numstat")
-            .output()
-        {
-            Ok(out) => out,
-            Err(_) => return sysexits::ExitCode::Unavailable,
-        };
-        match String::from_utf8(process.stdout) {
-            Ok(string) => string,
-            Err(_) => return sysexits::ExitCode::DataErr,
-        }
-    } else if matches.opt_present("input") {
-        let path = matches.opt_str("input").unwrap();
-        match std::fs::read_to_string(path) {
-            Ok(string) => string,
-            Err(_) => return sysexits::ExitCode::IoErr,
-        }
-    } else {
-        todo!("Read Git history from `stdin`.");
+    let commits = match input.read() {
+        Ok(string) => string,
+        Err(_) => match input {
+            commit_analyzer::InputMethod::GitHistory => {
+                eprintln!("Reading from the Git history was not possible.");
+                return sysexits::ExitCode::Unavailable;
+            }
+            commit_analyzer::InputMethod::LogFile(string) => {
+                eprintln!("The input file '{string}' could not be read.");
+                return sysexits::ExitCode::NoInput;
+            }
+            commit_analyzer::InputMethod::Stdin => {
+                eprintln!("Reading from `stdin` failed.");
+                return sysexits::ExitCode::IoErr;
+            }
+        },
     };
     let mut commits = commits.as_str();
     let mut parsed_commits = vec![];

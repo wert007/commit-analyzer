@@ -5,8 +5,8 @@
 This is a simple tool which grabs the output of `git log --numstat` and analyzes
 how much time somebody worked on the project.
 
-For instance, simply call the one of the following lines to see all commits that
-fit the criteria and how much time was spend creating them.
+For instance, simply call one of the following lines to see all commits that fit
+the criteria and how much time was spend creating them.
 
 ```
 commit-analyzer --git --author-equals wert007
@@ -46,7 +46,30 @@ directory of this repository.
 | `--message-equals`        |       | (**OR**) Filter for certain commit messages.                              |
 | `--message-starts-with`   | `-l`  | (**OR**) Filter for certain commit messages.                              |
 | `--output`                | `-o`  | An output file for the commits per day in CSV format.                     |
+| `--stdin`                 |       | Read input data from `stdin`.                                             |
 | `--verbose`               | `-v`  | Always show the entire output.                                            |
 
 Options marked with **OR** in their explanation can be specified multiple times
 and will be evaluated by joining them using the logical OR (`||`).
+
+## Installation and Updating
+
+Installation is very easy with Cargo. Just execute the following line in a
+terminal:
+
+```
+cargo install --git https://github.com/wert007/commit-analyzer
+```
+
+This command will install a release compilation of the latest version locally to
+your user account.
+
+In order to install the latest updates, rerun with `--force`:
+
+```
+cargo install --force --git https://github.com/wert007/commit-analyzer
+```
+
+Cargo will then replace the currently installed release binary with a newly
+compiled one from the latest repository state using the configured release
+profile.
