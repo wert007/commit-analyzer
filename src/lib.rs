@@ -1,5 +1,9 @@
 //! The utility functions and data structures of this project.
 
+use std::path::PathBuf;
+
+use clap::{Parser, Subcommand};
+
 /// The author meta data.
 ///
 /// A valid author serialisation consists of
@@ -336,77 +340,39 @@ impl Filter {
     }
 
     /// Create a new instance from a given set of filter creteria.
-    pub fn new(matches: &getopts::Matches) -> Self {
+    pub fn new(args: Args) -> Self {
         Self {
-            author_contains: matches.opt_strs("author-contains"),
-            author_equals: matches.opt_strs("author-equals"),
-            commit_contains: matches.opt_strs("commit-contains"),
-            commit_equals: matches.opt_strs("commit-equals"),
-            email_contains: matches.opt_strs("email-contains"),
-            email_equals: matches.opt_strs("email-equals"),
-            file_extension: matches.opt_strs("file-extension"),
-            message_contains: matches.opt_strs("message-contains"),
-            message_equals: matches.opt_strs("message-equals"),
-            message_starts_with: matches.opt_strs("message-starts-with"),
+            author_contains: args.author_contains,
+            author_equals: args.author_equals,
+            commit_contains: args.commit_contains,
+            commit_equals: args.commit_equals,
+            email_contains: args.email_contains,
+            email_equals: args.email_equals,
+            file_extension: args.file_extension,
+            message_contains: args.message_contains,
+            message_equals: args.message_equals,
+            message_starts_with: args.message_starts_with,
         }
     }
 }
 
 /// The possible input methods.
+#[derive(Subcommand, Debug)]
 pub enum InputMethod {
     /// Read the input from the local Git history.
     GitHistory,
 
     /// Read the specified input file.
-    LogFile(String),
+    LogFile {
+        /// The log file to read from.
+        log_file: PathBuf,
+    },
 
     /// Read from `stdin`.
     Stdin,
 }
 
 impl InputMethod {
-    /// Create a new instance from the given command line options.
-    ///
-    /// For each application call, there is only one input method specification
-    /// allowed. In case that multiple methods should be given by the
-    /// corresponding command line options, the application will quit with an
-    /// according error message and exit code since it is not clear which method
-    /// shall be preferred in case of different input per method.
-    ///
-    /// The check itself is performed as follows:
-    ///
-    /// * Each input method is associated with a certain bit.
-    /// * If an input method is requested, its bit will be set.
-    /// * If the resulting integer is equal to two to the power of a natural
-    ///   number or zero, the corresponding input method will be configured;
-    ///   else, the operation is invalid.
-    pub fn parse(matches: &getopts::Matches) -> Option<Self> {
-        const GIT: i32 = 1;
-        const INPUT: i32 = 2;
-        const STDIN: i32 = 4;
-
-        let mut method = 0;
-
-        if matches.opt_present("git") {
-            method |= GIT
-        }
-
-        if matches.opt_present("input") {
-            method |= INPUT
-        }
-
-        if matches.opt_present("stdin") {
-            method |= STDIN
-        }
-
-        match method {
-            GIT => Some(Self::GitHistory),
-            INPUT => Some(Self::LogFile(matches.opt_str("input").unwrap())),
-            STDIN => Some(Self::Stdin),
-            _ => None,
-        }
-    }
-
     /// Process the configured input method.
     pub fn read(&self) -> Result<String, Box<dyn std::error::Error>> {
         match self {
@@ -418,7 +384,7 @@ impl InputMethod {
 
                 Ok(String::from_utf8(process.stdout)?)
             }
-            Self::LogFile(string) => Ok(std::fs::read_to_string(string)?),
+            Self::LogFile { log_file } => Ok(std::fs::read_to_string(log_file)?),
             Self::Stdin => {
                 let mut input = String::new();
 
@@ -521,17 +487,58 @@ pub enum LocParseError {
     SecondTabulatorMissing,
 }
 
-/// A brief in-app documentation.
-///
-/// This function will write a brief usage information, including a short
-/// introduction to the meaning of the configured `options`, to `stdout`.
-pub fn usage(options: &getopts::Options) {
-    let description = "Parses the Git history.";
-    let name = "commit-analyzer";
-    let synopsis = "[OPTIONS]";
+/// Parses the Git history.
+#[derive(Parser, Debug)]
+#[clap(version, about, long_about = None)]
+pub struct Args {
+    #[clap(subcommand)]
+    pub input_method: InputMethod,
 
-    println!(
-        "{name}.\n{description}\n\n{}",
-        options.usage(&format!("Usage: {name} {synopsis}"))
-    );
+    /// Always show the entire output.
+    #[clap(short, long)]
+    pub verbose: bool,
+
+    /// Filter for certain author names. ORs if specified multiple times.
+    #[clap(short, long)]
+    author_contains: Vec<String>,
+
+    /// Filter for certain author names. ORs if specified multiple times.
+    #[clap(long)]
+    author_equals: Vec<String>,
+
+    /// Filter for certain author emails. ORs if specified multiple times.
+    #[clap(short, long)]
+    email_contains: Vec<String>,
+    /// Filter for certain author emails. ORs if specified multiple times.
+    #[clap(long)]
+    email_equals: Vec<String>,
+
+    /// Filter for certain commit hashes. ORs if specified multiple times.
+    #[clap(short, long)]
+    commit_contains: Vec<String>,
+    /// Filter for certain commit hashes. ORs if specified multiple times.
+    #[clap(long)]
+    commit_equals: Vec<String>,
+
+    /// Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.
+    #[clap(short, long)]
+    file_extension: Vec<String>,
+
+    /// Filter for certain commit messages. ORs if specified multiple times.
+    #[clap(short, long)]
+    message_contains: Vec<String>,
+    /// Filter for certain commit messages. ORs if specified multiple times.
+    #[clap(long)]
+    message_equals: Vec<String>,
+    /// Filter for certain commit messages. ORs if specified multiple times.
+    #[clap(short = 'l', long)]
+    message_starts_with: Vec<String>,
+
+    /// The time which may pass between two commits that still counts as working.
+    #[clap(short, long, default_value_t = 3)]
+    pub duration: u32,
+
+    /// An output file for the commits per day in CSV format.
+    #[clap(short, long)]
+    pub output: Option<PathBuf>,
 }

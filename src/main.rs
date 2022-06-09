@@ -1,135 +1,19 @@
 use std::{collections::HashMap, io::Write, ops::AddAssign};
 
+use clap::Parser;
+
 fn main() -> sysexits::ExitCode {
-    let mut opts = getopts::Options::new();
-    let opts = opts
-        .optflag("", "git", "Grab the input data from the local Git history.")
-        .optflag("h", "help", "Show this help and exit.")
-        .optflag("", "stdin", "Read input data from `stdin`.")
-        .optflag("v", "verbose", "Always show the entire output.")
-        .optmulti(
-            "a",
-            "author-contains",
-            "Filter for certain author names. ORs if specified multiple times.",
-            "NAME",
-        )
-        .optmulti(
-            "",
-            "author-equals",
-            "Filter for certain author names. ORs if specified multiple times.",
-            "NAME",
-        )
-        .optmulti(
-            "e",
-            "email-contains",
-            "Filter for certain author emails. ORs if specified multiple times.",
-            "EMAIL",
-        )
-        .optmulti(
-            "",
-            "email-equals",
-            "Filter for certain author emails. ORs if specified multiple times.",
-            "EMAIL",
-        )
-        .optmulti(
-            "c",
-            "commit-contains",
-            "Filter for certain commit hashes. ORs if specified multiple times.",
-            "HASH",
-        )
-        .optmulti(
-            "",
-            "commit-equals",
-            "Filter for certain commit hashes. ORs if specified multiple times.",
-            "HASH",
-        )
-        .optmulti(
-            "f",
-            "file-extension",
-            "Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.",
-            "EXTENSION",
-        )
-        .optmulti(
-            "m",
-            "message-contains",
-            "Filter for certain commit messages. ORs if specified multiple times.",
-            "MESSAGE",
-        )
-        .optmulti(
-            "",
-            "message-equals",
-            "Filter for certain commit messages. ORs if specified multiple times.",
-            "MESSAGE",
-        )
-        .optmulti(
-            "l",
-            "message-starts-with",
-            "Filter for certain commit messages. ORs if specified multiple times.",
-            "MESSAGE",
-        )
-        .optopt(
-            "d",
-            "duration",
-            "The time which may pass between two commits that still counts as working.",
-            "HOURS",
-        )
-        .optopt("i", "input", "The log file to read from.", "FILE")
-        .optopt(
-            "o",
-            "output",
-            "An output file for the commits per day in CSV format.",
-            "FILE",
-        );
-    let matches = match opts.parse(std::env::args()) {
-        Ok(it) => it,
-        Err(getopts::Fail::ArgumentMissing(string)) => {
-            eprintln!(
-                "{}",
-                opts.usage(&format!(
-                    "There was an argument expected for option '{string}'."
-                ))
-            );
-            return sysexits::ExitCode::Usage;
-        }
-        Err(getopts::Fail::UnrecognizedOption(string)) => {
-            eprintln!("{}", opts.usage(&format!("Unknown option '{string}'.")));
-            return sysexits::ExitCode::Usage;
-        }
-        Err(err) => {
-            eprintln!("{}", opts.usage(&format!("{err}")));
-            return sysexits::ExitCode::Config;
-        }
-    };
-    if matches.opt_present("help") {
-        commit_analyzer::usage(opts);
-        return sysexits::ExitCode::Ok;
-    }
-    let input = match commit_analyzer::InputMethod::parse(&matches) {
-        Some(input) => input,
-        None => {
-            eprintln!("{}", opts.usage("Please specify one input method."));
-            return sysexits::ExitCode::Usage;
-        }
-    };
-    let is_verbose = matches.opt_present("verbose");
-    let max_diff_hours = match matches.opt_str("duration").map(|str| str.parse::<u32>()) {
-        None => 3,
-        Some(Ok(it)) => it,
-        Some(Err(error)) => {
-            eprintln!("Invalid duration: {error}!");
-            return sysexits::ExitCode::Usage;
-        }
-    };
-    let path = matches.opt_str("output");
-    let commits = match input.read() {
+    let mut args = commit_analyzer::Args::parse();
+
+    let commits = match args.input_method.read() {
         Ok(string) => string,
-        Err(_) => match input {
+        Err(_) => match args.input_method {
             commit_analyzer::InputMethod::GitHistory => {
                 eprintln!("Reading from the Git history was not possible.");
                 return sysexits::ExitCode::Unavailable;
             }
-            commit_analyzer::InputMethod::LogFile(string) => {
-                eprintln!("The input file '{string}' could not be read.");
+            commit_analyzer::InputMethod::LogFile { log_file: input } => {
+                eprintln!("The input file '{}' could not be read.", input.display());
                 return sysexits::ExitCode::NoInput;
             }
             commit_analyzer::InputMethod::Stdin => {
@@ -155,7 +39,10 @@ fn main() -> sysexits::ExitCode {
     }
     let mut last_time = None;
     let mut duration = chrono::Duration::zero();
-    let filter = commit_analyzer::Filter::new(&matches);
+    let output = args.output.take();
+    let is_verbose = args.verbose;
+    let max_time_difference = args.duration as i64;
+    let filter = commit_analyzer::Filter::new(args);
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
     let mut loc_per_day = HashMap::new();
@@ -172,7 +59,7 @@ fn main() -> sysexits::ExitCode {
                 .add_assign(commit.loc(&filter));
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = *commit.date() - last_time;
-                if diff.num_hours() <= max_diff_hours as i64 {
+                if diff.num_hours() <= max_time_difference {
                     duration = duration + diff;
                 }
             }
@@ -186,7 +73,7 @@ fn main() -> sysexits::ExitCode {
     println!("Estimated time was {}h", duration.num_hours());
     println!("Found {} commits overall", commit_count);
 
-    if let Some(path) = path {
+    if let Some(path) = output {
         let mut file = match std::fs::File::create(path) {
             Ok(file) => file,
             Err(_) => return sysexits::ExitCode::CantCreat,

@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 chrono = "*"
-getopts = "*"
+clap = { version = "*", features = ["derive"] }
 sysexits = "*"
