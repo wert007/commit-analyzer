@@ -494,8 +494,8 @@ pub struct Args {
     input_method: InputMethod,
 
     /// Always show the entire output.
-    #[clap(short, long)]
-    verbose: bool,
+    #[clap(short='v', long="verbose")]
+    is_verbose: bool,
 
     /// Filter for certain author names. ORs if specified multiple times.
     #[clap(short, long)]
@@ -553,7 +553,7 @@ impl Args {
     /// Get the configured verbosity level of the program.
     #[must_use]
     pub fn is_verbose(&self) -> bool {
-        self.verbose
+        self.is_verbose
     }
 
     /// Get the maximum duration between two commits considered spent working.
