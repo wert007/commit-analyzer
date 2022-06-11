@@ -544,27 +544,29 @@ pub struct Args {
 }
 
 impl Args {
-    /// Get a reference to the input method specified by the user.
+    /// Get the input method specified by the user.
     #[must_use]
     pub fn input_method(&self) -> &InputMethod {
         &self.input_method
     }
 
-    /// Get the expected verbosity of the program.
+    /// Get the configured verbosity level of the program.
     #[must_use]
     pub fn is_verbose(&self) -> bool {
         self.verbose
     }
 
-    /// Get the duration specified by the user, that may be marked as working
-    /// between to commits.
+    /// Get the maximum duration between two commits considered spent working.
     #[must_use]
     pub fn duration(&self) -> u32 {
         self.duration
     }
 
-    /// Takes the output path, specified by the user, out of `Args`. This should
-    /// therefore only be called once, but saves a unnecessary clone.
+    /// Takes the output path, specified by the user, out of `Args`.
+    ///
+    /// This method moves the specified path to the intended output file out of
+    /// this struct. This should therefore only be called once, but saves an
+    /// unnecessary clone.
     #[must_use]
     pub fn take_output(&mut self) -> Option<PathBuf> {
         self.output.take()
