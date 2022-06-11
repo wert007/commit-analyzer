@@ -1,11 +1,14 @@
 [package]
-name = "commit-analyzer"
-version = "0.1.0"
+categories = ["command-line-utilities"]
+description = "Gets the time somebody worked on something from `git log`."
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+keywords = ["cli", "git", "summary", "time"]
+license = "MIT"
+name = "commit-analyzer"
+repository = "https://github.com/wert007/commit-analyzer"
+version = "0.1.0"
 
 [dependencies]
-chrono = "*"
-clap = { version = "*", features = ["derive"] }
-sysexits = "*"
+chrono = "0.4.19"
+clap = { version = "3.2.6", features = ["derive"] }
+sysexits = "0.3.0"
