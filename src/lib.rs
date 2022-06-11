@@ -90,6 +90,23 @@ impl Args {
     pub fn take_output(&mut self) -> Option<PathBuf> {
         self.output.take()
     }
+
+    /// Creates a new Filter as specified by the user.
+    #[must_use]
+    pub fn filter(&self) -> Filter {
+        Filter {
+            author_contains: &self.author_contains,
+            author_equals: &self.author_equals,
+            commit_contains: &self.commit_contains,
+            commit_equals: &self.commit_equals,
+            email_contains: &self.email_contains,
+            email_equals: &self.email_equals,
+            file_extension: &self.file_extension,
+            message_contains: &self.message_contains,
+            message_equals: &self.message_equals,
+            message_starts_with: &self.message_starts_with,
+        }
+    }
 }
 
 /// The possible input methods.
@@ -145,39 +162,39 @@ impl InputMethod {
 ///
 /// This data structure allows to filter the input commits by certain criteria.
 #[derive(Debug, Default)]
-pub struct Filter {
+pub struct Filter<'a> {
     /// A set of substrings to be contained by some authors' names.
-    author_contains: Vec<String>,
+    author_contains: &'a [String],
 
     /// A set of strings to match some authors's names.
-    author_equals: Vec<String>,
+    author_equals: &'a [String],
 
     /// A set of substrings to be contained by some commits' hashes.
-    commit_contains: Vec<String>,
+    commit_contains: &'a [String],
 
     /// A set of strings to match some commits' hashes.
-    commit_equals: Vec<String>,
+    commit_equals: &'a [String],
 
     /// A set of substrings to be contained by some authors' email addresses.
-    email_contains: Vec<String>,
+    email_contains: &'a [String],
 
     /// A set of strings to match some authors' email addresses.
-    email_equals: Vec<String>,
+    email_equals: &'a [String],
 
     /// A set of file extensions to filter by.
-    file_extension: Vec<String>,
+    file_extension: &'a [String],
 
     /// A set of substrings to be contained by some commits' messages.
-    message_contains: Vec<String>,
+    message_contains: &'a [String],
 
     /// A set of strings to match some commits' messages.
-    message_equals: Vec<String>,
+    message_equals: &'a [String],
 
     /// A set of strings to introduce some commits' messages.
-    message_starts_with: Vec<String>,
+    message_starts_with: &'a [String],
 }
 
-impl Filter {
+impl Filter<'_> {
     /// Whether the author's email address matches the expectations.
     fn check_author_email(&self, email: &str) -> bool {
         let contains =
@@ -239,22 +256,6 @@ impl Filter {
             && self.check_author_email(commit.author().email())
             && self.check_commit(commit.commit())
             && self.check_message(commit.message())
-    }
-
-    /// Create a new instance from a given set of filter criteria.
-    pub fn new(args: Args) -> Self {
-        Self {
-            author_contains: args.author_contains,
-            author_equals: args.author_equals,
-            commit_contains: args.commit_contains,
-            commit_equals: args.commit_equals,
-            email_contains: args.email_contains,
-            email_equals: args.email_equals,
-            file_extension: args.file_extension,
-            message_contains: args.message_contains,
-            message_equals: args.message_equals,
-            message_starts_with: args.message_starts_with,
-        }
     }
 }
 

@@ -39,10 +39,7 @@ fn main() -> sysexits::ExitCode {
     }
     let mut last_time = None;
     let mut duration = chrono::Duration::zero();
-    let output = args.take_output();
-    let is_verbose = args.is_verbose();
-    let max_time_difference = args.duration() as i64;
-    let filter = commit_analyzer::Filter::new(args);
+    let filter = args.filter();
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
     let mut loc_per_day = HashMap::new();
@@ -59,12 +56,12 @@ fn main() -> sysexits::ExitCode {
                 .add_assign(commit.loc(&filter));
             if let Some(last_time) = last_time {
                 let diff: chrono::Duration = *commit.date() - last_time;
-                if diff.num_hours() <= max_time_difference {
+                if diff.num_hours() <= args.duration() as i64 {
                     duration = duration + diff;
                 }
             }
             last_time = Some(*commit.date());
-            if is_verbose {
+            if args.is_verbose() {
                 println!("{:#?}", commit);
             }
         }
@@ -73,7 +70,7 @@ fn main() -> sysexits::ExitCode {
     println!("Estimated time was {}h", duration.num_hours());
     println!("Found {} commits overall", commit_count);
 
-    if let Some(path) = output {
+    if let Some(path) = args.take_output() {
         let mut file = match std::fs::File::create(path) {
             Ok(file) => file,
             Err(_) => return sysexits::ExitCode::CantCreat,
