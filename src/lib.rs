@@ -4,7 +4,6 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 
-
 /// Parses the Git history.
 #[derive(Parser, Debug)]
 #[clap(version, about, long_about = None)]
@@ -13,7 +12,7 @@ pub struct Args {
     input_method: InputMethod,
 
     /// Always show the entire output.
-    #[clap(short='v', long="verbose")]
+    #[clap(short = 'v', long = "verbose")]
     is_verbose: bool,
 
     /// Filter for certain author names. ORs if specified multiple times.
