@@ -1,5 +1,9 @@
 # Commit Analyzer
 
+## Summary
+
+Gets the time somebody worked on something from `git log`.
+
 ## Description
 
 This is a simple tool which grabs the output of `git log --numstat` and analyzes
