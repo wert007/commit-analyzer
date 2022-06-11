@@ -492,11 +492,11 @@ pub enum LocParseError {
 #[clap(version, about, long_about = None)]
 pub struct Args {
     #[clap(subcommand)]
-    pub input_method: InputMethod,
+    input_method: InputMethod,
 
     /// Always show the entire output.
     #[clap(short, long)]
-    pub verbose: bool,
+    verbose: bool,
 
     /// Filter for certain author names. ORs if specified multiple times.
     #[clap(short, long)]
@@ -536,9 +536,37 @@ pub struct Args {
 
     /// The time which may pass between two commits that still counts as working.
     #[clap(short, long, default_value_t = 3)]
-    pub duration: u32,
+    duration: u32,
 
     /// An output file for the commits per day in CSV format.
     #[clap(short, long)]
-    pub output: Option<PathBuf>,
+    output: Option<PathBuf>,
+}
+
+impl Args {
+    /// Get a reference to the input method specified by the user.
+    #[must_use]
+    pub fn input_method(&self) -> &InputMethod {
+        &self.input_method
+    }
+
+    /// Get the expected verbosity of the program.
+    #[must_use]
+    pub fn is_verbose(&self) -> bool {
+        self.verbose
+    }
+
+    /// Get the duration specified by the user, that may be marked as working
+    /// between to commits.
+    #[must_use]
+    pub fn duration(&self) -> u32 {
+        self.duration
+    }
+
+    /// Takes the output path, specified by the user, out of `Args`. This should
+    /// therefore only be called once, but saves a unnecessary clone.
+    #[must_use]
+    pub fn take_output(&mut self) -> Option<PathBuf> {
+        self.output.take()
+    }
 }

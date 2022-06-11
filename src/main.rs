@@ -5,9 +5,9 @@ use clap::Parser;
 fn main() -> sysexits::ExitCode {
     let mut args = commit_analyzer::Args::parse();
 
-    let commits = match args.input_method.read() {
+    let commits = match args.input_method().read() {
         Ok(string) => string,
-        Err(_) => match args.input_method {
+        Err(_) => match args.input_method() {
             commit_analyzer::InputMethod::GitHistory => {
                 eprintln!("Reading from the Git history was not possible.");
                 return sysexits::ExitCode::Unavailable;
@@ -39,9 +39,9 @@ fn main() -> sysexits::ExitCode {
     }
     let mut last_time = None;
     let mut duration = chrono::Duration::zero();
-    let output = args.output.take();
-    let is_verbose = args.verbose;
-    let max_time_difference = args.duration as i64;
+    let output = args.take_output();
+    let is_verbose = args.is_verbose();
+    let max_time_difference = args.duration() as i64;
     let filter = commit_analyzer::Filter::new(args);
     let mut commit_count = 0;
     let mut commits_per_day = HashMap::new();
