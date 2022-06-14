@@ -1,5 +1,14 @@
 # Commit Analyzer
 
+## Summary
+
+Gets the time somebody worked on something from `git log`.
+
+## License
+
+This project's license is **MIT** and can be found in `LICENSE` in the main
+directory of this repository.
+
 ## Description
 
 This is a simple tool which grabs the output of `git log --numstat` and analyzes
@@ -21,11 +30,6 @@ changes due to them.
 commit-analyzer --git --output commits-and-loc-by-date.csv
 commit-analyzer --input git.log --output commits-and-loc-by-date.csv
 ```
-
-## License
-
-This project's license is **MIT** and can be found in `LICENSE` in the main
-directory of this repository.
 
 ## Configured Options
 
@@ -62,14 +66,5 @@ cargo install --git https://github.com/wert007/commit-analyzer
 ```
 
 This command will install a release compilation of the latest version locally to
-your user account.
-
-In order to install the latest updates, rerun with `--force`:
-
-```
-cargo install --force --git https://github.com/wert007/commit-analyzer
-```
-
-Cargo will then replace the currently installed release binary with a newly
-compiled one from the latest repository state using the configured release
-profile.
+your user account. The same command also works for regular updates, this is, new
+commits have had been introduced since the last installation.
