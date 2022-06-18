@@ -8,12 +8,26 @@ use clap::{Parser, Subcommand};
 #[derive(Parser, Debug)]
 #[clap(version, about, long_about = None)]
 pub struct Args {
+    /// Specifies how the program will read the git history.
     #[clap(subcommand)]
     input_method: InputMethod,
 
     /// Always show the entire output.
     #[clap(short = 'v', long = "verbose")]
     is_verbose: bool,
+
+    /// Filter the LOC diff for a certain file extension (e.g. `--file-extension
+    /// cpp`). ORs if specified multiple times.
+    #[clap(short, long)]
+    file_extension: Vec<String>,
+
+    /// The time which may pass between two commits that still counts as working.
+    #[clap(short, long, default_value_t = 3)]
+    duration: u32,
+
+    /// An output file for the commits per day in CSV format.
+    #[clap(short, long)]
+    output: Option<PathBuf>,
 
     /// Filter for certain author names. ORs if specified multiple times.
     #[clap(short, long)]
@@ -26,6 +40,7 @@ pub struct Args {
     /// Filter for certain author emails. ORs if specified multiple times.
     #[clap(short, long)]
     email_contains: Vec<String>,
+
     /// Filter for certain author emails. ORs if specified multiple times.
     #[clap(long)]
     email_equals: Vec<String>,
@@ -33,58 +48,48 @@ pub struct Args {
     /// Filter for certain commit hashes. ORs if specified multiple times.
     #[clap(short, long)]
     commit_contains: Vec<String>,
+
     /// Filter for certain commit hashes. ORs if specified multiple times.
     #[clap(long)]
     commit_equals: Vec<String>,
 
-    /// Filter the LOC diff for a certain file extension (e.g. `--file-extension
-    /// cpp`). ORs if specified multiple times.
-    #[clap(short, long)]
-    file_extension: Vec<String>,
-
     /// Filter for certain commit messages. ORs if specified multiple times.
     #[clap(short, long)]
     message_contains: Vec<String>,
+
     /// Filter for certain commit messages. ORs if specified multiple times.
     #[clap(long)]
     message_equals: Vec<String>,
+
     /// Filter for certain commit messages. ORs if specified multiple times.
     #[clap(short = 'l', long)]
     message_starts_with: Vec<String>,
-
-    /// The time which may pass between two commits that still counts as working.
-    #[clap(short, long, default_value_t = 3)]
-    duration: u32,
-
-    /// An output file for the commits per day in CSV format.
-    #[clap(short, long)]
-    output: Option<PathBuf>,
 }
 
 impl Args {
-    /// Get the input method specified by the user.
+    /// Gets the input method specified by the user.
     #[must_use]
     pub fn input_method(&self) -> &InputMethod {
         &self.input_method
     }
 
-    /// Get the configured verbosity level of the program.
+    /// Gets the configured verbosity level of the program.
     #[must_use]
     pub fn is_verbose(&self) -> bool {
         self.is_verbose
     }
 
-    /// Get the maximum duration between two commits considered spent working.
+    /// Gets the maximum duration between two commits considered spent working.
     #[must_use]
     pub fn duration(&self) -> u32 {
         self.duration
     }
 
-    /// Takes the output path, specified by the user, out of `Args`.
+    /// Moves the output path specified by the user out of `Args`
     ///
     /// This method moves the specified path to the intended output file out of
-    /// this struct. This should therefore only be called once, but saves an
-    /// unnecessary clone.
+    /// this struct by calling `Option::take`. This should, hence, be called
+    /// just once but prevents an obsolete clone.
     #[must_use]
     pub fn take_output(&mut self) -> Option<PathBuf> {
         self.output.take()
@@ -525,7 +530,7 @@ impl LocDiff {
         &self.file
     }
 
-    /// Calculate the LOC diff.
+    /// Calculates the LOC diff.
     pub fn loc(&self) -> i64 {
         if self.added.is_none() && self.removed.is_none() {
             0
@@ -534,7 +539,7 @@ impl LocDiff {
         }
     }
 
-    /// Extract the LOC diff information from the given line.
+    /// Extracts the LOC diff information from the given line.
     pub fn parse(loc: &str) -> Result<Self, LocParseError> {
         let (added, remainder) = loc
             .split_once('\t')
