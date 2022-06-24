@@ -8,16 +8,16 @@ use clap::{Parser, Subcommand};
 #[derive(Parser, Debug)]
 #[clap(version, about, long_about = None)]
 pub struct Args {
-    /// Specifies how the program will read the git history.
+    /// Specifies how the program will read the Git history.
     #[clap(subcommand)]
     input_method: InputMethod,
 
-    /// Always show the entire output.
+    /// Always shows the entire output.
     #[clap(short = 'v', long = "verbose")]
     is_verbose: bool,
 
-    /// Filter the LOC diff for a certain file extension (e.g. `--file-extension
-    /// cpp`). ORs if specified multiple times.
+    /// Filters the LOC diff for a certain file extension (e.g.
+    /// `--file-extension cpp`). ORs if specified multiple times.
     #[clap(short, long)]
     file_extension: Vec<String>,
 
@@ -29,39 +29,39 @@ pub struct Args {
     #[clap(short, long)]
     output: Option<PathBuf>,
 
-    /// Filter for certain author names. ORs if specified multiple times.
+    /// Filters for certain author names. ORs if specified multiple times.
     #[clap(short, long)]
     author_contains: Vec<String>,
 
-    /// Filter for certain author names. ORs if specified multiple times.
+    /// Filters for certain author names. ORs if specified multiple times.
     #[clap(long)]
     author_equals: Vec<String>,
 
-    /// Filter for certain author emails. ORs if specified multiple times.
+    /// Filters for certain author emails. ORs if specified multiple times.
     #[clap(short, long)]
     email_contains: Vec<String>,
 
-    /// Filter for certain author emails. ORs if specified multiple times.
+    /// Filters for certain author emails. ORs if specified multiple times.
     #[clap(long)]
     email_equals: Vec<String>,
 
-    /// Filter for certain commit hashes. ORs if specified multiple times.
+    /// Filters for certain commit hashes. ORs if specified multiple times.
     #[clap(short, long)]
     commit_contains: Vec<String>,
 
-    /// Filter for certain commit hashes. ORs if specified multiple times.
+    /// Filters for certain commit hashes. ORs if specified multiple times.
     #[clap(long)]
     commit_equals: Vec<String>,
 
-    /// Filter for certain commit messages. ORs if specified multiple times.
+    /// Filters for certain commit messages. ORs if specified multiple times.
     #[clap(short, long)]
     message_contains: Vec<String>,
 
-    /// Filter for certain commit messages. ORs if specified multiple times.
+    /// Filters for certain commit messages. ORs if specified multiple times.
     #[clap(long)]
     message_equals: Vec<String>,
 
-    /// Filter for certain commit messages. ORs if specified multiple times.
+    /// Filters for certain commit messages. ORs if specified multiple times.
     #[clap(short = 'l', long)]
     message_starts_with: Vec<String>,
 }
@@ -116,21 +116,21 @@ impl Args {
 /// The possible input methods.
 #[derive(Subcommand, Debug)]
 pub enum InputMethod {
-    /// Read the input from the local Git history.
+    /// Reads the input from the local Git history.
     GitHistory,
 
-    /// Read the specified input file.
+    /// Reads the specified input file.
     LogFile {
         /// The log file to read from.
         log_file: PathBuf,
     },
 
-    /// Read from `stdin`.
+    /// Reads from `stdin`.
     Stdin,
 }
 
 impl InputMethod {
-    /// Process the configured input method.
+    /// Processes the configured input method.
     pub fn read(&self) -> Result<String, Box<dyn std::error::Error>> {
         match self {
             Self::GitHistory => {
@@ -292,7 +292,7 @@ impl Author {
         &self.name
     }
 
-    /// Extract the author information from the given line.
+    /// Extracts the author information from the given line.
     pub fn parse(author: &str) -> Result<Self, AuthorParseError> {
         let (name, remainder) = author.split_once('<').ok_or(AuthorParseError::NameFailed)?;
 
@@ -373,7 +373,7 @@ impl Commit {
         &self.message
     }
 
-    /// Construct a new instance from the raw input data.
+    /// Constructs a new instance from the raw input data.
     pub fn parse(commit: &str) -> Result<(Self, &str), CommitParseError> {
         let (commit, remainder) = commit
             .strip_prefix("commit")
