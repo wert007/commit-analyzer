@@ -238,9 +238,9 @@ pub enum CommitParseError {
     Unknown,
 }
 
-/// The revealed filter creteria.
+/// The revealed filter criteria.
 ///
-/// This data structure allows to filter the input commits by certain creteria.
+/// This data structure allows to filter the input commits by certain criteria.
 #[derive(Debug, Default)]
 pub struct Filter {
     /// A set of substrings to be contained by some authors' names.
@@ -255,8 +255,7 @@ pub struct Filter {
     /// A set of strings to match some commits' hashes.
     commit_equals: Vec<String>,
 
-    /// A set of substrings to be contained by some authors' email
-    /// addresses.
+    /// A set of substrings to be contained by some authors' email addresses.
     email_contains: Vec<String>,
 
     /// A set of strings to match some authors' email addresses.
@@ -520,7 +519,8 @@ pub struct Args {
     #[clap(long)]
     commit_equals: Vec<String>,
 
-    /// Filter loc for certain file extension (e.g. `--file-extension cpp`). ORs if specified multiple times.
+    /// Filter the LOC diff for certain file extension (e.g. `--file-extension
+    /// cpp`). ORs if specified multiple times.
     #[clap(short, long)]
     file_extension: Vec<String>,
 
