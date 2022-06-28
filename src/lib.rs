@@ -1,5 +1,268 @@
 //! The utility functions and data structures of this project.
 
+use std::path::PathBuf;
+
+use clap::{Parser, Subcommand};
+
+/// Parses the Git history.
+#[derive(Parser, Debug)]
+#[clap(version, about, long_about = None)]
+pub struct Args {
+    /// Specifies how the program will read the Git history.
+    #[clap(subcommand)]
+    input_method: InputMethod,
+
+    /// Always shows the entire output.
+    #[clap(short = 'v', long = "verbose")]
+    is_verbose: bool,
+
+    /// Filters the LOC diff for a certain file extension (e.g.
+    /// `--file-extension cpp`). ORs if specified multiple times.
+    #[clap(short, long)]
+    file_extension: Vec<String>,
+
+    /// The time which may pass between two commits that still counts as working.
+    #[clap(short, long, default_value_t = 3)]
+    duration: u32,
+
+    /// An output file for the commits per day in CSV format.
+    #[clap(short, long)]
+    output: Option<PathBuf>,
+
+    /// Filters for certain author names. ORs if specified multiple times.
+    #[clap(short, long)]
+    author_contains: Vec<String>,
+
+    /// Filters for certain author names. ORs if specified multiple times.
+    #[clap(long)]
+    author_equals: Vec<String>,
+
+    /// Filters for certain author emails. ORs if specified multiple times.
+    #[clap(short, long)]
+    email_contains: Vec<String>,
+
+    /// Filters for certain author emails. ORs if specified multiple times.
+    #[clap(long)]
+    email_equals: Vec<String>,
+
+    /// Filters for certain commit hashes. ORs if specified multiple times.
+    #[clap(short, long)]
+    commit_contains: Vec<String>,
+
+    /// Filters for certain commit hashes. ORs if specified multiple times.
+    #[clap(long)]
+    commit_equals: Vec<String>,
+
+    /// Filters for certain commit messages. ORs if specified multiple times.
+    #[clap(short, long)]
+    message_contains: Vec<String>,
+
+    /// Filters for certain commit messages. ORs if specified multiple times.
+    #[clap(long)]
+    message_equals: Vec<String>,
+
+    /// Filters for certain commit messages. ORs if specified multiple times.
+    #[clap(short = 'l', long)]
+    message_starts_with: Vec<String>,
+}
+
+impl Args {
+    /// Gets the input method specified by the user.
+    #[must_use]
+    pub fn input_method(&self) -> &InputMethod {
+        &self.input_method
+    }
+
+    /// Gets the configured verbosity level of the program.
+    #[must_use]
+    pub fn is_verbose(&self) -> bool {
+        self.is_verbose
+    }
+
+    /// Gets the maximum duration between two commits considered spent working.
+    #[must_use]
+    pub fn duration(&self) -> u32 {
+        self.duration
+    }
+
+    /// Moves the output path specified by the user out of `Args`
+    ///
+    /// This method moves the specified path to the intended output file out of
+    /// this struct by calling `Option::take`. This should, hence, be called
+    /// just once but prevents an obsolete clone.
+    #[must_use]
+    pub fn take_output(&mut self) -> Option<PathBuf> {
+        self.output.take()
+    }
+
+    /// Creates a new Filter as specified by the user.
+    #[must_use]
+    pub fn filter(&self) -> Filter {
+        Filter {
+            author_contains: &self.author_contains,
+            author_equals: &self.author_equals,
+            commit_contains: &self.commit_contains,
+            commit_equals: &self.commit_equals,
+            email_contains: &self.email_contains,
+            email_equals: &self.email_equals,
+            file_extension: &self.file_extension,
+            message_contains: &self.message_contains,
+            message_equals: &self.message_equals,
+            message_starts_with: &self.message_starts_with,
+        }
+    }
+}
+
+/// The possible input methods.
+#[derive(Subcommand, Debug)]
+pub enum InputMethod {
+    /// Reads the input from the local Git history.
+    GitHistory,
+
+    /// Reads the specified input file.
+    LogFile {
+        /// The log file to read from.
+        log_file: PathBuf,
+    },
+
+    /// Reads from `stdin`.
+    Stdin,
+}
+
+impl InputMethod {
+    /// Processes the configured input method.
+    pub fn read(&self) -> Result<String, Box<dyn std::error::Error>> {
+        match self {
+            Self::GitHistory => {
+                let process = std::process::Command::new("git")
+                    .arg("log")
+                    .arg("--numstat")
+                    .output()?;
+
+                Ok(String::from_utf8(process.stdout)?)
+            }
+            Self::LogFile { log_file } => Ok(std::fs::read_to_string(log_file)?),
+            Self::Stdin => {
+                let mut input = String::new();
+
+                loop {
+                    let mut buffer = String::new();
+
+                    if std::io::stdin().read_line(&mut buffer)? == 0 {
+                        break;
+                    }
+
+                    input.push_str(&buffer);
+                }
+
+                Ok(input)
+            }
+        }
+    }
+}
+
+
+/// The revealed filter criteria.
+///
+/// This data structure allows to filter the input commits by certain criteria.
+#[derive(Debug, Default)]
+pub struct Filter<'a> {
+    /// A set of substrings to be contained by some authors' names.
+    author_contains: &'a [String],
+
+    /// A set of strings to match some authors's names.
+    author_equals: &'a [String],
+
+    /// A set of substrings to be contained by some commits' hashes.
+    commit_contains: &'a [String],
+
+    /// A set of strings to match some commits' hashes.
+    commit_equals: &'a [String],
+
+    /// A set of substrings to be contained by some authors' email addresses.
+    email_contains: &'a [String],
+
+    /// A set of strings to match some authors' email addresses.
+    email_equals: &'a [String],
+
+    /// A set of file extensions to filter by.
+    file_extension: &'a [String],
+
+    /// A set of substrings to be contained by some commits' messages.
+    message_contains: &'a [String],
+
+    /// A set of strings to match some commits' messages.
+    message_equals: &'a [String],
+
+    /// A set of strings to introduce some commits' messages.
+    message_starts_with: &'a [String],
+}
+
+impl Filter<'_> {
+    /// Whether the author's email address matches the expectations.
+    fn check_author_email(&self, email: &str) -> bool {
+        let contains =
+            self.email_contains.is_empty() || self.email_contains.iter().any(|e| email.contains(e));
+        let equals = self.email_equals.is_empty() || self.email_equals.iter().any(|e| e == email);
+
+        equals && contains
+    }
+
+    /// Whether the author's name matches the expectations.
+    fn check_author_name(&self, name: &str) -> bool {
+        let contains = self.author_contains.is_empty()
+            || self.author_contains.iter().any(|n| name.contains(n));
+        let equals = self.author_equals.is_empty() || self.author_equals.iter().any(|n| n == name);
+
+        equals && contains
+    }
+
+    /// Whether the commit meta data matches the expectations.
+    fn check_commit(&self, commit: &str) -> bool {
+        let contains = self.commit_contains.is_empty()
+            || self.commit_contains.iter().any(|c| commit.contains(c));
+        let equals =
+            self.commit_equals.is_empty() || self.commit_equals.iter().any(|c| c == commit);
+
+        equals && contains
+    }
+
+    /// Whether the LOC diff matches the expectations.
+    pub fn check_loc(&self, loc: &&crate::LocDiff) -> bool {
+        self.file_extension.is_empty()
+            || self
+                .file_extension
+                .iter()
+                .any(|ext| loc.file().ends_with(&format!(".{}", ext)))
+    }
+
+    /// Whether the message matches the expectations.
+    fn check_message(&self, message: &str) -> bool {
+        let contains = self.message_contains.is_empty()
+            || self.message_contains.iter().any(|m| message.contains(m));
+        let equals =
+            self.message_equals.is_empty() || self.message_equals.iter().any(|m| m == message);
+        let starts_with = self.message_starts_with.is_empty()
+            || self
+                .message_starts_with
+                .iter()
+                .any(|m| message.starts_with(m));
+
+        equals && contains && starts_with
+    }
+
+    /// An abbreviation for the filter checks.
+    ///
+    /// This function checks whether the given `commit` matches the
+    /// expectations defined in this `filter`.
+    pub fn matches(&self, commit: &crate::Commit) -> bool {
+        self.check_author_name(commit.author().name())
+            && self.check_author_email(commit.author().email())
+            && self.check_commit(commit.commit())
+            && self.check_message(commit.message())
+    }
+}
+
 /// The author meta data.
 ///
 /// A valid author serialisation consists of
@@ -29,7 +292,7 @@ impl Author {
         &self.name
     }
 
-    /// Extract the author information from the given line.
+    /// Extracts the author information from the given line.
     pub fn parse(author: &str) -> Result<Self, AuthorParseError> {
         let (name, remainder) = author.split_once('<').ok_or(AuthorParseError::NameFailed)?;
 
@@ -110,7 +373,7 @@ impl Commit {
         &self.message
     }
 
-    /// Construct a new instance from the raw input data.
+    /// Constructs a new instance from the raw input data.
     pub fn parse(commit: &str) -> Result<(Self, &str), CommitParseError> {
         let (commit, remainder) = commit
             .strip_prefix("commit")
@@ -234,210 +497,6 @@ pub enum CommitParseError {
     Unknown,
 }
 
-/// The revealed filter creteria.
-///
-/// This data structure allows to filter the input commits by certain creteria.
-#[derive(Debug, Default)]
-pub struct Filter {
-    /// A set of substrings to be contained by some authors' names.
-    author_contains: Vec<String>,
-
-    /// A set of strings to match some authors's names.
-    author_equals: Vec<String>,
-
-    /// A set of substrings to be contained by some commits' hashes.
-    commit_contains: Vec<String>,
-
-    /// A set of strings to match some commits' hashes.
-    commit_equals: Vec<String>,
-
-    /// A set of substrings to be contained by some authors' email
-    /// addresses.
-    email_contains: Vec<String>,
-
-    /// A set of strings to match some authors' email addresses.
-    email_equals: Vec<String>,
-
-    /// A set of file extensions to filter by.
-    file_extension: Vec<String>,
-
-    /// A set of substrings to be contained by some commits' messages.
-    message_contains: Vec<String>,
-
-    /// A set of strings to match some commits' messages.
-    message_equals: Vec<String>,
-
-    /// A set of strings to introduce some commits' messages.
-    message_starts_with: Vec<String>,
-}
-
-impl Filter {
-    /// Whether the author's email address matches the expectations.
-    fn check_author_email(&self, email: &str) -> bool {
-        let contains =
-            self.email_contains.is_empty() || self.email_contains.iter().any(|e| email.contains(e));
-        let equals = self.email_equals.is_empty() || self.email_equals.iter().any(|e| e == email);
-
-        equals && contains
-    }
-
-    /// Whether the author's name matches the expectations.
-    fn check_author_name(&self, name: &str) -> bool {
-        let contains = self.author_contains.is_empty()
-            || self.author_contains.iter().any(|n| name.contains(n));
-        let equals = self.author_equals.is_empty() || self.author_equals.iter().any(|n| n == name);
-
-        equals && contains
-    }
-
-    /// Whether the commit meta data matches the expectations.
-    fn check_commit(&self, commit: &str) -> bool {
-        let contains = self.commit_contains.is_empty()
-            || self.commit_contains.iter().any(|c| commit.contains(c));
-        let equals =
-            self.commit_equals.is_empty() || self.commit_equals.iter().any(|c| c == commit);
-
-        equals && contains
-    }
-
-    /// Whether the LOC diff matches the expectations.
-    pub fn check_loc(&self, loc: &&crate::LocDiff) -> bool {
-        self.file_extension.is_empty()
-            || self
-                .file_extension
-                .iter()
-                .any(|ext| loc.file().ends_with(&format!(".{}", ext)))
-    }
-
-    /// Whether the message matches the expectations.
-    fn check_message(&self, message: &str) -> bool {
-        let contains = self.message_contains.is_empty()
-            || self.message_contains.iter().any(|m| message.contains(m));
-        let equals =
-            self.message_equals.is_empty() || self.message_equals.iter().any(|m| m == message);
-        let starts_with = self.message_starts_with.is_empty()
-            || self
-                .message_starts_with
-                .iter()
-                .any(|m| message.starts_with(m));
-
-        equals && contains && starts_with
-    }
-
-    /// An abbreviation for the filter checks.
-    ///
-    /// This function checks whether the given `commit` matches the
-    /// expectations defined in this `filter`.
-    pub fn matches(&self, commit: &crate::Commit) -> bool {
-        self.check_author_name(commit.author().name())
-            && self.check_author_email(commit.author().email())
-            && self.check_commit(commit.commit())
-            && self.check_message(commit.message())
-    }
-
-    /// Create a new instance from a given set of filter creteria.
-    pub fn new(matches: &getopts::Matches) -> Self {
-        Self {
-            author_contains: matches.opt_strs("author-contains"),
-            author_equals: matches.opt_strs("author-equals"),
-            commit_contains: matches.opt_strs("commit-contains"),
-            commit_equals: matches.opt_strs("commit-equals"),
-            email_contains: matches.opt_strs("email-contains"),
-            email_equals: matches.opt_strs("email-equals"),
-            file_extension: matches.opt_strs("file-extension"),
-            message_contains: matches.opt_strs("message-contains"),
-            message_equals: matches.opt_strs("message-equals"),
-            message_starts_with: matches.opt_strs("message-starts-with"),
-        }
-    }
-}
-
-/// The possible input methods.
-pub enum InputMethod {
-    /// Read the input from the local Git history.
-    GitHistory,
-
-    /// Read the specified input file.
-    LogFile(String),
-
-    /// Read from `stdin`.
-    Stdin,
-}
-
-impl InputMethod {
-    /// Create a new instance from the given command line options.
-    ///
-    /// For each application call, there is only one input method specification
-    /// allowed. In case that multiple methods should be given by the
-    /// corresponding command line options, the application will quit with an
-    /// according error message and exit code since it is not clear which method
-    /// shall be preferred in case of different input per method.
-    ///
-    /// The check itself is performed as follows:
-    ///
-    /// * Each input method is associated with a certain bit.
-    /// * If an input method is requested, its bit will be set.
-    /// * If the resulting integer is equal to two to the power of a natural
-    ///   number or zero, the corresponding input method will be configured;
-    ///   else, the operation is invalid.
-    pub fn parse(matches: &getopts::Matches) -> Option<Self> {
-        const GIT: i32 = 1;
-        const INPUT: i32 = 2;
-        const STDIN: i32 = 4;
-
-        let mut method = 0;
-
-        if matches.opt_present("git") {
-            method |= GIT
-        }
-
-        if matches.opt_present("input") {
-            method |= INPUT
-        }
-
-        if matches.opt_present("stdin") {
-            method |= STDIN
-        }
-
-        match method {
-            GIT => Some(Self::GitHistory),
-            INPUT => Some(Self::LogFile(matches.opt_str("input").unwrap())),
-            STDIN => Some(Self::Stdin),
-            _ => None,
-        }
-    }
-
-    /// Process the configured input method.
-    pub fn read(&self) -> Result<String, Box<dyn std::error::Error>> {
-        match self {
-            Self::GitHistory => {
-                let process = std::process::Command::new("git")
-                    .arg("log")
-                    .arg("--numstat")
-                    .output()?;
-
-                Ok(String::from_utf8(process.stdout)?)
-            }
-            Self::LogFile(string) => Ok(std::fs::read_to_string(string)?),
-            Self::Stdin => {
-                let mut input = String::new();
-
-                loop {
-                    let mut buffer = String::new();
-
-                    if std::io::stdin().read_line(&mut buffer)? == 0 {
-                        break;
-                    }
-
-                    input.push_str(&buffer);
-                }
-
-                Ok(input)
-            }
-        }
-    }
-}
-
 /// The LOC diff a certain commit introduces.
 ///
 /// LOC is the abbreviation for the number of **l**ines **o**f **c**ode a
@@ -471,7 +530,7 @@ impl LocDiff {
         &self.file
     }
 
-    /// Calculate the LOC diff.
+    /// Calculates the LOC diff.
     pub fn loc(&self) -> i64 {
         if self.added.is_none() && self.removed.is_none() {
             0
@@ -480,7 +539,7 @@ impl LocDiff {
         }
     }
 
-    /// Extract the LOC diff information from the given line.
+    /// Extracts the LOC diff information from the given line.
     pub fn parse(loc: &str) -> Result<Self, LocParseError> {
         let (added, remainder) = loc
             .split_once('\t')
@@ -519,19 +578,4 @@ pub enum LocParseError {
 
     /// The tab character between the deletions and file name is missing.
     SecondTabulatorMissing,
-}
-
-/// A brief in-app documentation.
-///
-/// This function will write a brief usage information, including a short
-/// introduction to the meaning of the configured `options`, to `stdout`.
-pub fn usage(options: &getopts::Options) {
-    let description = "Parses the Git history.";
-    let name = "commit-analyzer";
-    let synopsis = "[OPTIONS]";
-
-    println!(
-        "{name}.\n{description}\n\n{}",
-        options.usage(&format!("Usage: {name} {synopsis}"))
-    );
 }
